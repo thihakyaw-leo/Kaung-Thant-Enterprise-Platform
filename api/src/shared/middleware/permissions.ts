@@ -1,12 +1,13 @@
 import { Context, Next } from 'hono';
 
-export type Role = 'owner' | 'admin' | 'manager' | 'cashier';
+export type Role = 'owner' | 'admin' | 'super_admin' | 'manager' | 'cashier';
 
 /**
  * Standard Permission Mapping
  */
-const PERMISSIONS = {
+const PERMISSIONS: Record<Role, string[]> = {
   owner: ['*'], // Access to everything
+  super_admin: ['*'], // Access to everything globally
   admin: ['sales.*', 'inventory.*', 'reports.*', 'config.*'],
   manager: ['sales.*', 'inventory.*', 'reports.view'],
   cashier: ['sales.create', 'sales.view', 'inventory.view'],
