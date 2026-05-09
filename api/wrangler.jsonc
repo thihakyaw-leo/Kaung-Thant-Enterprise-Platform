@@ -51,6 +51,25 @@
       }
     },
     "production": {
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "pos-db-prod",
+          "database_id": "918863d9-83ff-4963-acf7-97f7def58bc0"
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "POS_SETTINGS",
+          "id": "c5802fc866b7449e84ce7ebe8205284c"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "R2_ARCHIVE",
+          "bucket_name": "pos-archive-prod"
+        }
+      ],
       "vars": {
         "ENVIRONMENT": "production"
       }
