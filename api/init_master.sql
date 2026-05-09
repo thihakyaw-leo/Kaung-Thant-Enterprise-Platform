@@ -99,7 +99,7 @@ INSERT OR IGNORE INTO system_settings (key, value, category, updated_at) VALUES
 ('date_format', 'DD/MM/YYYY', 'localization', 1714759200),
 -- Domain Settings
 ('primary_domain', 'pos.kinetic.io', 'domain', 1714759200),
-('root_domain', 'kt-pos.com', 'domain', 1714759200),
+('root_domain', 'kaungthant.shop', 'domain', 1714759200),
 ('custom_domain_enabled', 'true', 'domain', 1714759200),
 ('ssl_provider', 'Cloudflare', 'domain', 1714759200),
 ('reserved_subdomains', 'admin,api,www,saas,dev,status', 'domain', 1714759200),

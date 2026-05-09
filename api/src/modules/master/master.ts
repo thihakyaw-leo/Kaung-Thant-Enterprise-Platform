@@ -632,7 +632,7 @@ masterAPI.post('/tenants/:id/impersonate', async (c) => {
       .from(schema.systemSettings)
       .where(eq(schema.systemSettings.key, 'root_domain'))
       .get();
-    const rootDomain = rootDomainSetting?.value || 'kt-pos.com';
+    const rootDomain = rootDomainSetting?.value || 'kaungthant.shop';
 
     // Use crypto.randomUUID() — cryptographically secure
     const impersonationUrl = `https://${tenant.subdomain}.${rootDomain}/auth/impersonate?token=${crypto.randomUUID()}`;

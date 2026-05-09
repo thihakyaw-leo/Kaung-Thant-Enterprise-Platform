@@ -38,7 +38,7 @@ export const TenantsManagement = () => {
   const updateTenant = useUpdateTenant();
   
   const rootDomain = useMemo(() => {
-    return settings?.find(s => s.key === 'root_domain')?.value || 'kt-pos.com';
+    return settings?.find(s => s.key === 'root_domain')?.value || 'kaungthant.shop';
   }, [settings]);
 
   const [searchTerm, setSearchTerm] = useState('');
