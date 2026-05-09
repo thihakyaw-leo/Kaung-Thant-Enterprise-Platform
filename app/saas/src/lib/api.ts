@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../features/auth/useAuthStore';
 
-export const API_BASE_URL = 'https://api.kaungthant.workers.dev';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://kaung-thant-pos-api-production.kaungthant.workers.dev';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
