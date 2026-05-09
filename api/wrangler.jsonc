@@ -72,6 +72,38 @@
           "bucket_name": "pos-archive-prod"
         }
       ],
+      "secrets_store_secrets": [
+        {
+          "binding": "CLOUDFLARE_ACCOUNT_ID",
+          "store_id": "b11356ff20c9459389214212b7fd7536",
+          "secret_name": "CLOUDFLARE_ACCOUNT_ID"
+        },
+        {
+          "binding": "CLOUDFLARE_API_TOKEN",
+          "store_id": "b11356ff20c9459389214212b7fd7536",
+          "secret_name": "CLOUDFLARE_API_TOKEN"
+        },
+        {
+          "binding": "GOOGLE_GENERATIVE_AI_API_KEY",
+          "store_id": "b11356ff20c9459389214212b7fd7536",
+          "secret_name": "GOOGLE_GENERATIVE_AI_API_KEY"
+        },
+        {
+          "binding": "JWT_SECRET",
+          "store_id": "b11356ff20c9459389214212b7fd7536",
+          "secret_name": "JWT_SECRET"
+        },
+        {
+          "binding": "TELEGRAM_BOT_TOKEN",
+          "store_id": "b11356ff20c9459389214212b7fd7536",
+          "secret_name": "TELEGRAM_BOT_TOKEN"
+        },
+        {
+          "binding": "TELEGRAM_CHAT_ID",
+          "store_id": "b11356ff20c9459389214212b7fd7536",
+          "secret_name": "TELEGRAM_CHAT_ID"
+        }
+      ],
       "vars": {
         "ENVIRONMENT": "production"
       }
