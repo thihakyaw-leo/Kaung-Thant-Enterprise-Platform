@@ -23,18 +23,24 @@ import {
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useTenants, useUpdateTenantStatus, useDeleteTenant, useCreateTenant, useUpdateTenant, Tenant } from './hooks/useTenants';
+import { useSettings } from '../settings/hooks/useSettings';
 import { api } from '../../lib/api';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export const TenantsManagement = () => {
   const { t } = useTranslation();
   const { data: tenants, isLoading } = useTenants();
+  const { data: settings } = useSettings();
   const updateStatus = useUpdateTenantStatus();
   const deleteTenant = useDeleteTenant();
   const createTenant = useCreateTenant();
   const updateTenant = useUpdateTenant();
   
+  const rootDomain = useMemo(() => {
+    return settings?.find(s => s.key === 'root_domain')?.value || 'kt-pos.com';
+  }, [settings]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -196,7 +202,7 @@ export const TenantsManagement = () => {
                     </td>
                     <td className="px-6 py-5">
                       <code className="text-xs text-secondary font-code-sm bg-secondary/10 px-2 py-1 rounded-lg border border-secondary/20">
-                        {tenant.subdomain}.kt-pos.com
+                        {tenant.subdomain}.{rootDomain}
                       </code>
                     </td>
                     <td className="px-6 py-5">
@@ -254,7 +260,7 @@ export const TenantsManagement = () => {
                           {tenant.status === 'active' ? <PauseCircle size={18} /> : <PlayCircle size={18} />}
                         </button>
                         <a 
-                          href={`https://${tenant.subdomain}.kt-pos.com`} 
+                          href={`https://${tenant.subdomain}.${rootDomain}`} 
                           target="_blank" 
                           rel="noreferrer"
                           className="p-2 hover:bg-surface-bright rounded-lg text-secondary transition-all"
@@ -312,7 +318,7 @@ export const TenantsManagement = () => {
                     value={newTenant.subdomain}
                     onChange={(e) => setNewTenant({...newTenant, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '')})}
                   />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40 text-xs font-bold">.kt-pos.com</div>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface/40 text-xs font-bold">.{rootDomain}</div>
                 </div>
               </div>
 

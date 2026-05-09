@@ -626,8 +626,16 @@ masterAPI.post('/tenants/:id/impersonate', async (c) => {
   try {
     const tenant = await db.select().from(schema.tenants).where(sql`id = ${id}`).get();
     if (!tenant) return c.json({ success: false, error: 'Tenant not found' }, 404);
-    // Use crypto.randomUUID() — cryptographically secure (Math.random is forbidden for tokens)
-    const impersonationUrl = `https://${tenant.subdomain}.kt-pos.com/auth/impersonate?token=${crypto.randomUUID()}`;
+    
+    // Fetch root domain from settings
+    const rootDomainSetting = await db.select()
+      .from(schema.systemSettings)
+      .where(eq(schema.systemSettings.key, 'root_domain'))
+      .get();
+    const rootDomain = rootDomainSetting?.value || 'kt-pos.com';
+
+    // Use crypto.randomUUID() — cryptographically secure
+    const impersonationUrl = `https://${tenant.subdomain}.${rootDomain}/auth/impersonate?token=${crypto.randomUUID()}`;
     return c.json({ success: true, data: { redirectUrl: impersonationUrl } });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
