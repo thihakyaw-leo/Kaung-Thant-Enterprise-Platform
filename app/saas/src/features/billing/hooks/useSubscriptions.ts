@@ -83,6 +83,19 @@ export const useUpdatePricingPlan = () => {
     },
   });
 };
+
+export const useCreatePricingPlan = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (newPlan: Omit<PricingPlan, 'id'>) => {
+      const { data } = await api.post('/api/master/billing/plans', newPlan);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-plans'] });
+    },
+  });
+};
 export const useSystemSettings = () => {
   return useQuery({
     queryKey: ['system-settings'],

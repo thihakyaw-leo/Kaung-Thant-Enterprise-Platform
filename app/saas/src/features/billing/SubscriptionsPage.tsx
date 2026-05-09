@@ -26,7 +26,7 @@ export function SubscriptionsPage() {
   const kpis = [
     {
       label: t('subscriptions.kpis.mrr'),
-      value: stats?.totalRevenue ? `${stats.totalRevenue.toLocaleString()} MMK` : '0 MMK',
+      value: stats?.mrr ? `${stats.mrr.toLocaleString()} MMK` : '0 MMK',
       change: '+12.5%',
       icon: TrendingUp,
       color: 'text-primary',
@@ -35,7 +35,7 @@ export function SubscriptionsPage() {
     {
       label: t('subscriptions.kpis.active'),
       value: subscriptions?.length || 0,
-      change: '+3 this month',
+      change: `Total: ${stats?.tenantCount || 0}`,
       icon: Users,
       color: 'text-secondary',
       bg: 'bg-secondary/10'
@@ -50,7 +50,7 @@ export function SubscriptionsPage() {
     },
     {
       label: t('subscriptions.kpis.pending'),
-      value: '2',
+      value: stats?.unpaidCount || 0,
       change: 'Action Required',
       icon: AlertCircle,
       color: 'text-error',

@@ -29,60 +29,45 @@ import {
 } from 'recharts';
 import { useState } from 'react';
 import { cn } from '../../utils/cn';
-import { useInvoices } from './hooks/useSubscriptions';
+import { useInvoices, useBillingStats, usePricingPlans, useCreatePricingPlan } from './hooks/useSubscriptions';
 
 
 export const BillingManagement = () => {
   const [activeTab, setActiveTab] = useState<'invoices' | 'plans'>('invoices');
-  // FIX #5: Use real invoices from DB instead of hardcoded mock array
   const { data: invoices, isLoading: invoicesLoading } = useInvoices();
-
-  // Subscription tier display data (static config, not from DB)
-  const tiers = [
-    {
-      id: 'starter',
-      name: 'Starter',
-      price: '50,000',
-      currency: 'Kyat(ks)',
-      users: 3,
-      products: 500,
-      color: 'text-emerald-400',
-      description: 'Ideal for small retail shops starting out.'
-    },
-    {
-      id: 'professional',
-      name: 'Professional',
-      price: '150,000',
-      currency: 'Kyat(ks)',
-      users: 10,
-      products: 5000,
-      color: 'text-primary',
-      description: 'Best for growing businesses with multiple staff.'
-    },
-    {
-      id: 'enterprise',
-      name: 'Enterprise',
-      price: 'Custom',
-      currency: '',
-      users: 'Unlimited' as const,
-      products: 'Unlimited' as const,
-      color: 'text-secondary',
-      description: 'Full-scale solution for multi-branch corporations.'
-    },
-  ];
-
-  // Revenue projection chart data
-  const projectionData = [
-    { name: 'May', revenue: 42500, projection: 42500 },
-    { name: 'Jun', revenue: 44000, projection: 46000 },
-    { name: 'Jul', revenue: null, projection: 51000 },
-    { name: 'Aug', revenue: null, projection: 58000 },
-    { name: 'Sep', revenue: null, projection: 65000 },
-    { name: 'Oct', revenue: null, projection: 74000 },
-  ];
+  const { data: stats } = useBillingStats();
+  const { data: plans } = usePricingPlans();
+  const createPlan = useCreatePricingPlan();
 
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [newPlan, setNewPlan] = useState({
+    name: '',
+    price: '',
+    maxUsers: '',
+    maxProducts: '',
+    description: '',
+    billingCycle: 'monthly' as 'monthly' | 'yearly'
+  });
   const [isExporting, setIsExporting] = useState(false);
+
+  const handleCreatePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createPlan.mutateAsync({
+        name: newPlan.name,
+        price: Number(newPlan.price),
+        currency: 'MMK',
+        billingCycle: newPlan.billingCycle,
+        maxUsers: Number(newPlan.maxUsers),
+        maxProducts: Number(newPlan.maxProducts),
+        features: JSON.stringify([newPlan.description])
+      });
+      setShowPlanModal(false);
+      setNewPlan({ name: '', price: '', maxUsers: '', maxProducts: '', description: '', billingCycle: 'monthly' });
+    } catch (err) {
+      console.error('Failed to create plan:', err);
+    }
+  };
 
   const handleExport = () => {
     setIsExporting(true);
@@ -142,36 +127,75 @@ export const BillingManagement = () => {
                 <X size={20} />
               </button>
             </div>
-            <div className="p-8 space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Plan Name</label>
-                  <input type="text" placeholder="e.g. Growth" className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" />
+            <form onSubmit={handleCreatePlan}>
+              <div className="p-8 space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Plan Name</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={newPlan.name}
+                      onChange={e => setNewPlan({...newPlan, name: e.target.value})}
+                      placeholder="e.g. Growth" 
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Monthly Price (MMK)</label>
+                    <input 
+                      type="number" 
+                      required
+                      value={newPlan.price}
+                      onChange={e => setNewPlan({...newPlan, price: e.target.value})}
+                      placeholder="e.g. 250,000" 
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" 
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">User Limit</label>
+                    <input 
+                      type="number" 
+                      required
+                      value={newPlan.maxUsers}
+                      onChange={e => setNewPlan({...newPlan, maxUsers: e.target.value})}
+                      placeholder="25" 
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Product Limit</label>
+                    <input 
+                      type="number" 
+                      required
+                      value={newPlan.maxProducts}
+                      onChange={e => setNewPlan({...newPlan, maxProducts: e.target.value})}
+                      placeholder="10000" 
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" 
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Monthly Price (MMK)</label>
-                  <input type="text" placeholder="e.g. 250,000" className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" />
+                  <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Plan Description</label>
+                  <textarea 
+                    rows={3} 
+                    required
+                    value={newPlan.description}
+                    onChange={e => setNewPlan({...newPlan, description: e.target.value})}
+                    placeholder="Describe the target audience for this plan..." 
+                    className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all resize-none"
+                  ></textarea>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">User Limit</label>
-                  <input type="number" placeholder="25" className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Product Limit</label>
-                  <input type="number" placeholder="10000" className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" />
-                </div>
+              <div className="p-8 border-t border-white/5 bg-white/2 flex justify-end gap-3">
+                <button type="button" onClick={() => setShowPlanModal(false)} className="px-6 py-3 rounded-xl text-xs font-bold text-on-surface/40 hover:text-white transition-all uppercase tracking-widest">Cancel</button>
+                <button type="submit" disabled={createPlan.isPending} className="px-8 py-3 bg-primary text-on-primary rounded-xl text-xs font-bold shadow-lg shadow-primary/20 uppercase tracking-widest">
+                  {createPlan.isPending ? 'Saving...' : 'Save Plan'}
+                </button>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Plan Description</label>
-                <textarea rows={3} placeholder="Describe the target audience for this plan..." className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all resize-none"></textarea>
-              </div>
-            </div>
-            <div className="p-8 border-t border-white/5 bg-white/2 flex justify-end gap-3">
-              <button onClick={() => setShowPlanModal(false)} className="px-6 py-3 rounded-xl text-xs font-bold text-on-surface/40 hover:text-white transition-all uppercase tracking-widest">Cancel</button>
-              <button className="px-8 py-3 bg-primary text-on-primary rounded-xl text-xs font-bold shadow-lg shadow-primary/20 uppercase tracking-widest">Save Plan</button>
-            </div>
+            </form>
           </div>
         </div>
       )}
@@ -226,9 +250,9 @@ export const BillingManagement = () => {
         {/* Quick Stats Grid */}
         <div className="flex flex-col gap-6">
           {[
-            { label: 'Current MRR', value: '42,500 Kyat(ks)', change: '+12.5%', icon: DollarSign, color: 'text-emerald-400', trend: 'up' },
-            { label: 'Avg. Revenue / Tenant', value: '1,450 Kyat(ks)', change: '+240 Kyat(ks)', icon: TrendingUp, color: 'text-primary', trend: 'up' },
-            { label: 'Unpaid Receivables', value: '3,050 Kyat(ks)', change: '5 Invoices', icon: AlertCircle, color: 'text-rose-400', trend: 'down' },
+            { label: 'Current MRR', value: `${(stats?.mrr || 0).toLocaleString()} Kyat(ks)`, change: '+12.5%', icon: DollarSign, color: 'text-emerald-400', trend: 'up' },
+            { label: 'Avg. Revenue / Tenant', value: `${(stats?.avgRevenuePerTenant || 0).toLocaleString()} Kyat(ks)`, change: `Total: ${stats?.tenantCount || 0}`, icon: TrendingUp, color: 'text-primary', trend: 'up' },
+            { label: 'Unpaid Receivables', value: `${(stats?.unpaidCount || 0).toLocaleString()} Invoices`, change: 'Action Required', icon: AlertCircle, color: 'text-rose-400', trend: 'down' },
           ].map((s, i) => (
             <div key={i} className="glass p-6 rounded-[24px] border border-white/5 flex items-center justify-between group hover:border-primary/20 transition-all cursor-pointer">
               <div className="space-y-1">
@@ -375,32 +399,38 @@ export const BillingManagement = () => {
           </div>
         ) : (
           <div className="p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {tiers.map((tier) => (
-              <div key={tier.id} className="glass p-8 rounded-[32px] border border-white/5 relative overflow-hidden flex flex-col group hover:border-primary/40 transition-all duration-500">
-                <div className={cn("absolute top-0 right-0 w-40 h-40 -mr-16 -mt-16 bg-current opacity-10 blur-[60px] transition-all group-hover:opacity-20", tier.color)} />
+            {!plans || plans.length === 0 ? (
+              <div className="col-span-full py-16 text-center text-on-surface/40">
+                <p>No custom pricing plans found. Add one to get started.</p>
+              </div>
+            ) : plans.map((plan) => (
+              <div key={plan.id} className="glass p-8 rounded-[32px] border border-white/5 relative overflow-hidden flex flex-col group hover:border-primary/40 transition-all duration-500">
+                <div className={cn("absolute top-0 right-0 w-40 h-40 -mr-16 -mt-16 bg-current opacity-10 blur-[60px] transition-all group-hover:opacity-20", "text-primary")} />
                 <div className="relative z-10 mb-6">
-                  <div className={cn("w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-4 border border-white/10", tier.color)}>
+                  <div className={cn("w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-4 border border-white/10", "text-primary")}>
                     <Zap size={24} />
                   </div>
-                  <h3 className={cn("text-2xl font-bold mb-2", tier.color)}>{tier.name}</h3>
-                  <p className="text-sm text-on-surface/40 leading-relaxed">{tier.description}</p>
+                  <h3 className={cn("text-2xl font-bold mb-2", "text-primary")}>{plan.name}</h3>
+                  <p className="text-sm text-on-surface/40 leading-relaxed">
+                    {plan.features ? JSON.parse(plan.features)[0] : 'No description provided.'}
+                  </p>
                 </div>
                 
                 <div className="relative z-10 mb-8 border-y border-white/5 py-6">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-display-lg font-bold text-white">{tier.price}</span>
-                    <span className="text-sm font-medium text-on-surface/40 uppercase tracking-widest">{tier.currency ? `${tier.currency} / mo` : ''}</span>
+                    <span className="text-4xl font-display-lg font-bold text-white">{plan.price.toLocaleString()}</span>
+                    <span className="text-sm font-medium text-on-surface/40 uppercase tracking-widest">{plan.currency} / {plan.billingCycle}</span>
                   </div>
                 </div>
 
                 <ul className="relative z-10 space-y-4 mb-8 flex-1">
                   <li className="flex items-center gap-3 text-sm text-on-surface/70">
                     <CheckCircle2 size={18} className="text-emerald-500" />
-                    <span>Up to <span className="text-white font-bold">{tier.users}</span> active users</span>
+                    <span>Up to <span className="text-white font-bold">{plan.maxUsers}</span> active users</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm text-on-surface/70">
                     <CheckCircle2 size={18} className="text-emerald-500" />
-                    <span><span className="text-white font-bold">{tier.products}</span> product inventory limit</span>
+                    <span><span className="text-white font-bold">{plan.maxProducts}</span> product inventory limit</span>
                   </li>
                   <li className="flex items-center gap-3 text-sm text-on-surface/70">
                     <CheckCircle2 size={18} className="text-emerald-500" />
@@ -410,7 +440,7 @@ export const BillingManagement = () => {
 
                 <button className={cn(
                   "relative z-10 w-full py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/10",
-                  tier.id === 'professional' ? "bg-primary text-on-primary border-none shadow-xl shadow-primary/20" : "bg-white/5 text-white hover:bg-white/10"
+                  "bg-white/5 text-white hover:bg-white/10"
                 )}>
                   Edit Plan Configuration
                   <ChevronRight size={16} />
