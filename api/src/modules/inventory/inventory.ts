@@ -74,7 +74,7 @@ inventoryAPI.get('/stock/:locationId', async (c) => {
   const locationId = c.req.param('locationId');
 
   try {
-    const stockData = await db
+    let query = db
       .select({
         id: schema.inventoryStock.id,
         name: schema.inventoryStock.name,
@@ -84,11 +84,49 @@ inventoryAPI.get('/stock/:locationId', async (c) => {
       })
       .from(schema.inventoryStock)
       .innerJoin(schema.inventoryStockQuantity, eq(schema.inventoryStock.id, schema.inventoryStockQuantity.stockId))
-      .innerJoin(schema.inventoryUnit, eq(schema.inventoryStock.unitId, schema.inventoryUnit.id))
-      .where(eq(schema.inventoryStockQuantity.locationId, locationId))
-      .all();
+      .innerJoin(schema.inventoryUnit, eq(schema.inventoryStock.unitId, schema.inventoryUnit.id));
+
+    if (locationId !== 'all') {
+      query = query.where(eq(schema.inventoryStockQuantity.locationId, locationId)) as any;
+    }
+
+    const stockData = await query.all();
 
     return c.json({ success: true, data: stockData });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return c.json({ success: false, error: message }, 500);
+  }
+});
+
+inventoryAPI.put('/products/:id', async (c) => {
+  const db = drizzle(c.env.DB);
+  const id = c.req.param('id');
+  const body = await c.req.json();
+  const now = Math.floor(Date.now() / 1000);
+
+  try {
+    await db.update(schema.inventoryStock).set({
+      code: body.code,
+      name: body.name,
+      description: body.description,
+      categoryId: body.categoryId,
+      unitId: body.unitId,
+      updatedAt: now
+    }).where(eq(schema.inventoryStock.id, id));
+    return c.json({ success: true, id });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return c.json({ success: false, error: message }, 500);
+  }
+});
+
+inventoryAPI.delete('/products/:id', async (c) => {
+  const db = drizzle(c.env.DB);
+  const id = c.req.param('id');
+  try {
+    await db.delete(schema.inventoryStock).where(eq(schema.inventoryStock.id, id));
+    return c.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return c.json({ success: false, error: message }, 500);

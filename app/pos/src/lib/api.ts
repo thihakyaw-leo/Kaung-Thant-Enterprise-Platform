@@ -65,12 +65,12 @@ export const api = {
 
   // Sales
   getSales: (params: Record<string, string | number | undefined> = {}) =>
-    request<Record<string, unknown>[]>(`/sales?${new URLSearchParams(params as Record<string, string>).toString()}`),
+    request<Record<string, unknown>[]>(`/sales/history?${new URLSearchParams(params as Record<string, string>).toString()}`),
 
   getSaleDetails: (id: string) => request<Record<string, unknown>>(`/sales/${id}`),
 
   createSale: (data: unknown) =>
-    request<{ id: string }>('/sales', { method: 'POST', body: JSON.stringify(data) }),
+    request<{ id: string }>('/sales/checkout', { method: 'POST', body: JSON.stringify(data) }),
 
   getSalesReturns: () => request<Record<string, unknown>[]>('/sales/returns'),
   createSalesReturn: (data: unknown) =>
@@ -78,15 +78,15 @@ export const api = {
 
   // Inventory
   getStocks: (params: Record<string, string | number | undefined> = {}) =>
-    request<Record<string, unknown>[]>(`/inventory/stock?${new URLSearchParams(params as Record<string, string>).toString()}`),
+    request<Record<string, unknown>[]>(`/inventory/stock/${params.locationId || 'all'}`),
 
   createStock: (data: unknown) =>
-    request<{ id: string }>('/inventory/stock', { method: 'POST', body: JSON.stringify(data) }),
+    request<{ id: string }>('/inventory/products', { method: 'POST', body: JSON.stringify(data) }),
 
   updateStock: (id: string, data: unknown) =>
-    request<{ id: string }>(`/inventory/stock/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    request<{ id: string }>(`/inventory/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
-  deleteStock: (id: string) => request<void>(`/inventory/stock/${id}`, { method: 'DELETE' }),
+  deleteStock: (id: string) => request<void>(`/inventory/products/${id}`, { method: 'DELETE' }),
 
   getCategories: () => request<Record<string, unknown>[]>('/inventory/categories'),
   createCategory: (data: unknown) =>
