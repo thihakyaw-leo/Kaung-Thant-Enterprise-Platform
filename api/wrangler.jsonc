@@ -37,7 +37,8 @@
         {
           "binding": "DB",
           "database_name": "pos-db-staging",
-          "database_id": "f2afb757-c6bc-45a9-85fe-c795a62bd468"
+          "database_id": "f2afb757-c6bc-45a9-85fe-c795a62bd468",
+          "migrations_dir": "drizzle"
         }
       ],
       "kv_namespaces": [
@@ -55,7 +56,8 @@
         {
           "binding": "DB",
           "database_name": "pos-db-prod",
-          "database_id": "918863d9-83ff-4963-acf7-97f7def58bc0"
+          "database_id": "918863d9-83ff-4963-acf7-97f7def58bc0",
+          "migrations_dir": "drizzle"
         }
       ],
       "kv_namespaces": [
