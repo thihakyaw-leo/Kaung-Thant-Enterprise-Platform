@@ -1,0 +1,59 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kaung-thant-pos-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-09",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pos-db-prod",
+      "database_id": "918863d9-83ff-4963-acf7-97f7def58bc0",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "POS_SETTINGS",
+      "id": "c5802fc866b7449e84ce7ebe8205284c"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2_ARCHIVE",
+      "bucket_name": "pos-archive-prod"
+    }
+  ],
+  "env": {
+    "staging": {
+      "name": "kaung-thant-pos-api-staging",
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "pos-db-staging",
+          "database_id": "f2afb757-c6bc-45a9-85fe-c795a62bd468"
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "POS_SETTINGS",
+          "id": "c5802fc866b7449e84ce7ebe8205284c"
+        }
+      ],
+      "vars": {
+        "ENVIRONMENT": "staging"
+      }
+    },
+    "production": {
+      "vars": {
+        "ENVIRONMENT": "production"
+      }
+    }
+  }
+}

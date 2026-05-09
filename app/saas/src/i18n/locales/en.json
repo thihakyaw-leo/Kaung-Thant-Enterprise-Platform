@@ -1,0 +1,180 @@
+{
+  "common": {
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "saved": "Settings Saved!",
+    "search": "Search...",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "suspended": "Suspended",
+    "delete": "Delete",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "synchronizing": "Synchronizing with Master DB...",
+    "open_portal": "Open Portal",
+    "terminate": "Terminate",
+    "view_all": "View All",
+    "plan": "Plan",
+    "trial": "Trial",
+    "enterprise": "Enterprise",
+    "pro": "Pro",
+    "basic": "Basic",
+    "production_mode": "Production Mode",
+    "platform_owner": "Platform Owner",
+    "search_placeholder": "Search Tenants, Orders..."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "tenants": "Tenants",
+    "pricing_plans": "Pricing Plans",
+    "health": "System Health",
+    "settings": "Settings",
+    "saas_users": "SaaS User",
+    "logout": "Logout",
+    "support": "Support Tickets"
+  },
+  "dashboard": {
+    "title": "Enterprise Command Center",
+    "description": "Real-time overview of the Kaung Thant SaaS ecosystem.",
+    "kpis": {
+      "tenants": "Total Tenants",
+      "revenue": "Total Revenue",
+      "devices": "Active Devices",
+      "churn": "Churn Rate"
+    },
+    "recent_tenants": "Recent Tenants",
+    "charts": {
+      "growth": "Tenant Growth & Revenue"
+    },
+    "system_health": {
+      "title": "System Health (Cloudflare Infrastructure)",
+      "d1": "D1 Database",
+      "workers": "Edge Workers",
+      "r2": "R2 Storage",
+      "operational": "Operational",
+      "healthy": "Healthy",
+      "optimal": "Optimal"
+    }
+  },
+  "users": {
+    "title": "SaaS User Management",
+    "description": "Manage global administrators and platform access levels.",
+    "invite": "Invite SaaS User",
+    "edit": "Edit SaaS User Details",
+    "new": "Invite New SaaS User",
+    "full_name": "Full Name",
+    "role": "Role",
+    "permissions": "Permissions",
+    "remove_confirm": "Are you sure you want to remove this SaaS user?",
+    "roles": {
+      "admin": "Administrator",
+      "super_admin": "Super Admin"
+    }
+  },
+  "tenants": {
+    "title": "Tenants Management",
+    "description": "Manage business accounts, subscriptions, and platform access.",
+    "new_tenant": "New Tenant",
+    "provisioning": "Tenant Provisioning",
+    "total_businesses": "Total Businesses",
+    "business_name": "Business Name",
+    "subdomain": "Subdomain",
+    "plan": "Plan",
+    "created_at": "Created At",
+    "no_tenants": "No tenants found matching your search.",
+    "create_tenant": "Create New Tenant",
+    "edit_tenant": "Edit Tenant Details",
+    "edit_description": "Configure business identity and POS terminal accounts.",
+    "business_identity": "Business Identity",
+    "enter_business_name": "Enter business name",
+    "subdomain_placeholder": "subdomain",
+    "select_plan": "Select Subscription Plan",
+    "provision_tenant": "Provision Tenant",
+    "confirm_suspend": "Are you sure you want to suspend {{name}}?",
+    "confirm_activate": "Are you sure you want to activate {{name}}?",
+    "confirm_delete": "CRITICAL ACTION: Are you sure you want to DELETE tenant \"{{name}}\"? This cannot be undone.",
+    "plans": {
+      "starter": "Starter",
+      "retail_core": "Retail Core",
+      "business_pro": "Business Pro",
+      "enterprise_edge": "Enterprise Edge"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Configure platform parameters and system preferences.",
+    "tabs": {
+      "general": "General Settings",
+      "domain": "Tenant Domains Settings",
+      "security": "Security Settings",
+      "localization": "Date & Currency",
+      "billing": "Payment Settings",
+      "invoice": "Invoice Settings",
+      "notifications": "Notification Settings",
+      "pricing_plans": "Pricing Plans"
+    },
+    "general": {
+      "platform_name": "Platform Name",
+      "support_email": "Support Email",
+      "platform_description": "Platform Description",
+      "platform_phone": "Phone Number",
+      "platform_address": "Address",
+      "enter_name": "Enter platform name",
+      "enter_description": "Enterprise POS Platform for Myanmar businesses..."
+    },
+    "domain": {
+      "url_structure": "Tenant URL Structure",
+      "url_description": "Tenants will access the platform via: {{subdomain}}.{{domain}}",
+      "root_domain": "Root Platform Domain",
+      "reserved_subdomains": "Reserved Subdomains",
+      "min_subdomain": "Min Subdomain Length",
+      "max_subdomain": "Max Subdomain Length",
+      "custom_domain": "Custom Domain Mapping",
+      "custom_domain_desc": "Allow enterprise tenants to use their own domains."
+    },
+    "security": {
+      "maintenance_mode": "Maintenance Mode",
+      "maintenance_desc": "Restrict platform access to admins only.",
+      "session_timeout": "Session Timeout (Days)",
+      "enforce_2fa": "Enforce 2FA",
+      "day": "Day",
+      "days": "Days"
+    },
+    "localization": {
+      "default_currency": "Default Currency",
+      "date_format": "Date Format"
+    }
+  },
+  "subscriptions": {
+    "title": "Subscriptions & Billing",
+    "description": "Manage pricing plans and global billing configuration.",
+    "tabs": {
+      "plans": "Pricing Plans",
+      "config": "System Config"
+    },
+    "plans": {
+      "edit": "Edit Pricing Plan",
+      "price": "Price",
+      "period": "Billing Period",
+      "features": "Plan Features",
+      "add_feature": "Add Feature"
+    },
+    "config": {
+      "invoice_edit": "Invoice Edit",
+      "currency": "Default Currency",
+      "grace_period": "Grace Period",
+      "invoice_prefix": "Invoice Prefix",
+      "next_number": "Next Number",
+      "padding": "Sequence Padding",
+      "preview": "Preview Next Invoice",
+      "notifications": "Notifications",
+      "support_contact": "Support Contact (Billing)",
+      "support_contact_service": "Support Contact (Service)",
+      "payment_methods": "Payment Methods (SaaS Billing)",
+      "apply": "Apply System Changes"
+    }
+  }
+}

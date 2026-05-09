@@ -1,0 +1,213 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@source "./**/*.{js,jsx,ts,tsx,html}";
+@source "../index.html";
+
+@theme {
+  /* Colors from sample.html */
+  --color-primary: #ffb77d;
+  --color-on-primary: #4d2600;
+  --color-primary-container: #f38b23;
+  --color-on-primary-container: #5d2f00;
+  --color-primary-fixed: #ffdcc3;
+  --color-primary-fixed-dim: #ffb77d;
+  --color-on-primary-fixed: #2f1500;
+  --color-on-primary-fixed-variant: #6e3900;
+
+  --color-secondary: #a6c8ff;
+  --color-on-secondary: #00315f;
+  --color-secondary-container: #3192fc;
+  --color-on-secondary-container: #002a53;
+  --color-secondary-fixed: #d5e3ff;
+  --color-secondary-fixed-dim: #a6c8ff;
+  --color-on-secondary-fixed: #001c3b;
+  --color-on-secondary-fixed-variant: #004786;
+
+  --color-tertiary: #cabeff;
+  --color-on-tertiary: #320099;
+  --color-tertiary-container: #a996ff;
+  --color-on-tertiary-container: #3c00b5;
+  --color-tertiary-fixed: #e6deff;
+  --color-tertiary-fixed-dim: #cabeff;
+  --color-on-tertiary-fixed: #1d0061;
+  --color-on-tertiary-fixed-variant: #491ac6;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  --color-background: #0e131f;
+  --color-on-background: #dee2f4;
+  --color-outline: #a38c7c;
+  --color-outline-variant: #554336;
+
+  --color-surface: #0e131f;
+  --color-on-surface: #dee2f4;
+  --color-surface-variant: #303542;
+  --color-on-surface-variant: #dcc2b0;
+  --color-surface-dim: #0e131f;
+  --color-surface-bright: #343946;
+  --color-surface-container-lowest: #090e1a;
+  --color-surface-container-low: #161b28;
+  --color-surface-container: #1b1f2c;
+  --color-surface-container-high: #252a37;
+  --color-surface-container-highest: #303542;
+
+  --color-inverse-surface: #dee2f4;
+  --color-inverse-on-surface: #2b303d;
+  --color-inverse-primary: #914d00;
+  --color-surface-tint: #ffb77d;
+
+  /* Typography families exactly as specified */
+  --font-display-lg: "Manrope", sans-serif;
+  --font-headline-md: "Manrope", sans-serif;
+  --font-title-sm: "Manrope", sans-serif;
+  --font-body-base: "Manrope", sans-serif;
+  --font-code-sm: "Inter", sans-serif;
+  --font-label-caps: "Inter", sans-serif;
+
+  /* Font sizes and their corresponding weights/line-heights are handled in the classes */
+  --font-size-display-lg: 48px;
+  --font-size-headline-md: 32px;
+  --font-size-title-sm: 18px;
+  --font-size-body-base: 16px;
+  --font-size-code-sm: 14px;
+  --font-size-label-caps: 12px;
+
+  /* Spacing */
+  --spacing-stack-sm: 0.5rem;
+  --spacing-stack-md: 1rem;
+  --spacing-stack-lg: 2rem;
+  --spacing-gutter: 1.5rem;
+  --spacing-container-padding: 2rem;
+  --spacing-base-unit: 8px;
+}
+
+/* Specific overrides to ensure Manrope is used everywhere as requested */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Manrope", sans-serif;
+}
+
+@layer utilities {
+  html {
+    @apply bg-background text-on-surface font-body-base antialiased;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-text-size-adjust: 100%; /* Safari on iOS, Firefox for Android 49+ */
+    text-size-adjust: 100%;         /* Standard — Chrome 54+, Edge 79+, Opera 41+ */
+  }
+
+  * {
+    box-sizing: inherit;
+  }
+
+  .glass {
+    @apply bg-surface/30 backdrop-blur-xl border border-white/10;
+  }
+
+  .glass-dark {
+    @apply bg-black/20 backdrop-blur-xl border border-white/5;
+  }
+
+  .animate-in {
+    animation-duration: 500ms;
+    animation-fill-mode: both;
+  }
+
+  .fade-in {
+    animation-name: fadeIn;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .dynamic-width {
+    width: var(--tw-width, 0%);
+  }
+
+  /* Custom Scrollbar for Dashboard */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  }
+
+  /* Recharts custom tooltip — replaces contentStyle inline objects */
+  .chart-tooltip {
+    background-color: #1a1c1e;
+    border: 1px solid rgb(255 255 255 / 0.06);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-family: "Manrope", sans-serif;
+    font-size: 12px;
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.4);
+  }
+
+  .chart-tooltip__label {
+    color: rgb(222 226 244 / 0.4);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .chart-tooltip__row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .chart-tooltip__name {
+    color: rgb(222 226 244 / 0.5);
+    font-weight: 400;
+    font-size: 11px;
+    margin-left: 4px;
+  }
+
+  .chart-tooltip__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ─── Scrollbar Hide Utility ─────────────────────────────────────
+     Cross-browser strategy:
+       1. ::-webkit-scrollbar  → Chrome (all), Safari, Edge, Samsung Internet
+       2. @supports scrollbar-width → Firefox 64+ and Chrome 121+ (progressive enhancement)
+     The linter warns about scrollbar-width in isolation; wrapping in @supports
+     signals this is intentional progressive enhancement, not a missing fallback.
+  ───────────────────────────────────────────────────────────────── */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Baseline: Chrome, Safari, Edge, Samsung Internet */
+  }
+
+  @supports (scrollbar-width: none) {
+    .scrollbar-hide {
+      scrollbar-width: none; /* Progressive enhancement: Firefox 64+ / Chrome 121+ */
+    }
+  }
+}

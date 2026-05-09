@@ -1,0 +1,19 @@
+{
+  // Disable VS Code's built-in CSS/SCSS validator.
+  // Tailwind CSS v4 uses custom at-rules (@plugin, @source, @theme, @apply)
+  // that the standard CSS language server does not recognise.
+  // The Tailwind CSS IntelliSense extension provides correct validation instead.
+  "css.validate": false,
+  "scss.validate": false,
+
+  // Tell Tailwind IntelliSense where to find the CSS entry point
+  "tailwindCSS.experimental.configFile": "src/index.css",
+
+  // Recognise Tailwind v4 at-rules so IntelliSense autocompletes them
+  "css.customData": [],
+
+  // Ensure .css files get Tailwind language features
+  "tailwindCSS.includeLanguages": {
+    "css": "css"
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "common": {
+    "save": "သိမ်းဆည်းရန်",
+    "saving": "သိမ်းဆည်းနေသည်...",
+    "saved": "သိမ်းဆည်းပြီးပါပြီ!",
+    "search": "ရှာဖွေရန်...",
+    "actions": "လုပ်ဆောင်ချက်များ",
+    "status": "အခြေအနေ",
+    "active": "အသုံးပြုဆဲ",
+    "suspended": "ရပ်ဆိုင်းထားသည်",
+    "delete": "ဖျက်ရန်",
+    "edit": "ပြင်ဆင်ရန်",
+    "cancel": "ပယ်ဖျက်ရန်",
+    "confirm": "အတည်ပြုရန်",
+    "close": "ပိတ်ရန်",
+    "synchronizing": "ဒေတာများ ရယူနေသည်...",
+    "open_portal": "Portal ဖွင့်ရန်",
+    "terminate": "အပြီးဖျက်သိမ်းရန်",
+    "view_all": "အားလုံးကြည့်ရန်",
+    "plan": "အစီအစဉ်",
+    "trial": "စမ်းသပ်အသုံးပြုမှု",
+    "enterprise": "Enterprise",
+    "pro": "Pro",
+    "basic": "Basic",
+    "production_mode": "Production စနစ်",
+    "platform_owner": "စနစ်ပိုင်ရှင်",
+    "search_placeholder": "လုပ်ငန်းများ၊ အမှာစာများ ရှာဖွေရန်..."
+  },
+  "nav": {
+    "dashboard": "ပင်မစာမျက်နှာ",
+    "tenants": "လုပ်ငန်းများ",
+    "pricing_plans": "စျေးနှုန်းအစီအစဉ်များ",
+    "health": "စနစ်ကျန်းမာရေး",
+    "settings": "ဆက်တင်များ",
+    "saas_users": "SaaS အသုံးပြုသူ",
+    "logout": "ထွက်ရန်",
+    "support": "အကူအညီ လက်မှတ်များ"
+  },
+  "dashboard": {
+    "title": "လုပ်ငန်းခွင် ထိန်းချုပ်ရေးစင်တာ",
+    "description": "Kaung Thant SaaS စနစ်၏ အခြေအနေများကို တိုက်ရိုက်ကြည့်ရှုပါ။",
+    "kpis": {
+      "tenants": "စုစုပေါင်း လုပ်ငန်းများ",
+      "revenue": "စုစုပေါင်း ဝင်ငွေ",
+      "devices": "အသုံးပြုနေသော စက်များ",
+      "churn": "နှုတ်ထွက်မှုနှုန်း"
+    },
+    "recent_tenants": "နောက်ဆုံးဝင်ရောက်လာသော လုပ်ငန်းများ",
+    "charts": {
+      "growth": "လုပ်ငန်းတိုးတက်မှုနှင့် ဝင်ငွေ"
+    },
+    "system_health": {
+      "title": "စနစ်ကျန်းမာရေး (Cloudflare Infrastructure)",
+      "d1": "D1 Database",
+      "workers": "Edge Workers",
+      "r2": "R2 Storage",
+      "operational": "ကောင်းမွန်စွာ လည်ပတ်နေသည်",
+      "healthy": "ကျန်းမာသည်",
+      "optimal": "အကောင်းဆုံးအခြေအနေ"
+    }
+  },
+  "users": {
+    "title": "SaaS User စီမံခန့်ခွဲမှု",
+    "description": "Platform အက်ဒမင်များနှင့် အသုံးပြုခွင့်များကို စီမံခန့်ခွဲပါ။",
+    "invite": "SaaS User ဖိတ်ခေါ်ရန်",
+    "edit": "User အချက်အလက်ပြင်ဆင်ရန်",
+    "new": "SaaS User အသစ်ဖိတ်ခေါ်ရန်",
+    "full_name": "အမည်အပြည့်အစုံ",
+    "role": "ရာထူး",
+    "permissions": "လုပ်ပိုင်ခွင့်များ",
+    "remove_confirm": "ဤ SaaS အသုံးပြုသူကို ဖယ်ရှားရန် သေချာပါသလား?",
+    "roles": {
+      "admin": "အက်ဒမင် (Admin)",
+      "super_admin": "စူပါအက်ဒမင် (Super Admin)"
+    }
+  },
+  "tenants": {
+    "title": "လုပ်ငန်းများ စီမံခန့်ခွဲမှု",
+    "description": "လုပ်ငန်းအကောင့်များ၊ စာရင်းသွင်းမှုများနှင့် စနစ်အသုံးပြုခွင့်များကို စီမံခန့်ခွဲပါ။",
+    "new_tenant": "လုပ်ငန်းအသစ်",
+    "provisioning": "လုပ်ငန်းအသစ် ထည့်သွင်းခြင်း",
+    "total_businesses": "စုစုပေါင်း လုပ်ငန်းအရေအတွက်",
+    "business_name": "လုပ်ငန်းအမည်",
+    "subdomain": "ယူအာအယ်လ် (Subdomain)",
+    "plan": "အစီအစဉ်",
+    "created_at": "စတင်သည့်နေ့",
+    "no_tenants": "ရှာဖွေမှုနှင့် ကိုက်ညီသော လုပ်ငန်းများ မရှိပါ။",
+    "create_tenant": "လုပ်ငန်းအသစ် ဖန်တီးရန်",
+    "edit_tenant": "လုပ်ငန်း အချက်အလက်ပြင်ဆင်ရန်",
+    "edit_description": "လုပ်ငန်း၏ အချက်အလက်များနှင့် POS အကောင့်များကို ပြင်ဆင်ပါ။",
+    "business_identity": "လုပ်ငန်းအချက်အလက်",
+    "enter_business_name": "လုပ်ငန်းအမည် ထည့်သွင်းပါ",
+    "subdomain_placeholder": "subdomain",
+    "select_plan": "အစီအစဉ် ရွေးချယ်ပါ",
+    "provision_tenant": "လုပ်ငန်းအသစ် စတင်ရန်",
+    "confirm_suspend": "{{name}} ကို ရပ်ဆိုင်းရန် သေချာပါသလား?",
+    "confirm_activate": "{{name}} ကို ပြန်လည်အသုံးပြုရန် သေချာပါသလား?",
+    "confirm_delete": "အရေးကြီးလုပ်ဆောင်ချက်: \"{{name}}\" ကို ဖျက်ရန် သေချာပါသလား? ဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်၍မရပါ။",
+    "plans": {
+      "starter": "စတင်သူ (Starter)",
+      "retail_core": "အခြေခံ (Retail Core)",
+      "business_pro": "စီးပွားရေး (Business Pro)",
+      "enterprise_edge": "အဆင့်မြင့် (Enterprise Edge)"
+    }
+  },
+  "settings": {
+    "title": "ဆက်တင်များ",
+    "description": "စနစ်တစ်ခုလုံး၏ အခြေခံသတ်မှတ်ချက်များကို ပြင်ဆင်ပါ။",
+    "tabs": {
+      "general": "အထွေထွေ ဆက်တင်များ",
+      "domain": "ဒိုမိန်း ဆက်တင်များ",
+      "security": "လုံခြုံရေး ဆက်တင်များ",
+      "localization": "ရက်စွဲနှင့် ငွေကြေး",
+      "billing": "ငွေပေးချေမှု ဆက်တင်များ",
+      "invoice": "အင်ဗွိုက် ဆက်တင်များ",
+      "notifications": "အကြောင်းကြားစာ ဆက်တင်များ",
+      "pricing_plans": "စျေးနှုန်းအစီအစဉ်များ"
+    },
+    "general": {
+      "platform_name": "ပလပ်ဖောင်းအမည်",
+      "support_email": "အကူအညီရယူရန် အီးမေးလ်",
+      "platform_description": "ပလပ်ဖောင်းအကြောင်း ရှင်းလင်းချက်",
+      "platform_phone": "ဖုန်းနံပါတ်",
+      "platform_address": "လိပ်စာ",
+      "enter_name": "ပလပ်ဖောင်းအမည် ထည့်သွင်းပါ",
+      "enter_description": "လုပ်ငန်းသုံး POS စနစ် (မြန်မာနိုင်ငံရှိ လုပ်ငန်းများအတွက်)..."
+    },
+    "domain": {
+      "url_structure": "Tenant URL ဖွဲ့စည်းပုံ",
+      "url_description": "လုပ်ငန်းများသည် platform ကို {{subdomain}}.{{domain}} မှတစ်ဆင့် အသုံးပြုမည်ဖြစ်သည်။",
+      "root_domain": "ပင်မ ဒိုမိန်း (Root Domain)",
+      "reserved_subdomains": "ပိတ်ပင်ထားသော Subdomains များ",
+      "min_subdomain": "အနည်းဆုံး Subdomain အရှည်",
+      "max_subdomain": "အများဆုံး Subdomain အရှည်",
+      "custom_domain": "စိတ်ကြိုက် ဒိုမိန်း အသုံးပြုခွင့်",
+      "custom_domain_desc": "လုပ်ငန်းရှင်များ ကိုယ်ပိုင် ဒိုမိန်းများ အသုံးပြုခွင့် ပေးရန်။"
+    },
+    "security": {
+      "maintenance_mode": "ပြုပြင်ထိန်းသိမ်းမှုစနစ် (Maintenance Mode)",
+      "maintenance_desc": "စနစ်ကို အက်ဒမင်များသာ အသုံးပြုခွင့်ပေးရန်။",
+      "session_timeout": "Session သက်တမ်း (ရက်)",
+      "enforce_2fa": "2FA အသုံးပြုရန် သတ်မှတ်ချက်",
+      "day": "ရက်",
+      "days": "ရက်"
+    },
+    "localization": {
+      "default_currency": "အခြေခံ ငွေကြေး",
+      "date_format": "ရက်စွဲ ပုံစံ"
+    }
+  },
+  "subscriptions": {
+    "title": "စာရင်းသွင်းမှုနှင့် ငွေတောင်းခံလွှာများ",
+    "description": "ဈေးနှုန်းအစီအစဉ်များနှင့် စနစ်တစ်ခုလုံး၏ ငွေတောင်းခံလွှာ ဆက်တင်များကို စီမံခန့်ခွဲပါ။",
+    "tabs": {
+      "plans": "ဈေးနှုန်းအစီအစဉ်များ",
+      "config": "စနစ်ဆက်တင်များ"
+    },
+    "plans": {
+      "edit": "အစီအစဉ်ပြင်ဆင်ရန်",
+      "price": "ဈေးနှုန်း",
+      "period": "ကြာချိန်",
+      "features": "အစီအစဉ်တွင် ပါဝင်သော ဝန်ဆောင်မှုများ",
+      "add_feature": "ဝန်ဆောင်မှုအသစ်ထည့်ရန်"
+    },
+    "config": {
+      "invoice_edit": "အင်ဗွိုက် ပြင်ဆင်ခြင်း",
+      "currency": "အခြေခံ အသုံးပြုမည့် ငွေကြေး",
+      "grace_period": "ငွေပေးချေရန် စောင့်ဆိုင်းချိန် (Grace Period)",
+      "invoice_prefix": "အင်ဗွိုက်ရှေ့ဆက်စာလုံး (Invoice Prefix)",
+      "next_number": "နောက်ထပ်ထွက်မည့် နံပါတ်",
+      "padding": "နံပါတ်၏ အရှည် (Padding)",
+      "preview": "နောက်ထပ်ထွက်မည့် အင်ဗွိုက် နမူနာ",
+      "notifications": "အကြောင်းကြားစာများ",
+      "support_contact": "ငွေပေးချေမှုဆိုင်ရာ ဆက်သွယ်ရန် (Billing)",
+      "support_contact_service": "ဝန်ဆောင်မှုဆိုင်ရာ ဆက်သွယ်ရန် (Service)",
+      "payment_methods": "ငွေလက်ခံမည့် နည်းလမ်းများ (SaaS Billing)",
+      "apply": "ပြင်ဆင်ချက်များကို သိမ်းဆည်းရန်"
+    }
+  }
+}
