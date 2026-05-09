@@ -136,7 +136,7 @@ salesAPI.get('/history', hasPermission('sales.view'), async (c) => {
 
 salesAPI.get('/:id', hasPermission('sales.view'), async (c) => {
   const db = drizzle(c.env.DB);
-  const id = c.req.param('id');
+  const id = c.req.param('id') as string;
   const sale = await db.select().from(schema.saleSale).where(eq(schema.saleSale.id, id)).get();
   if (!sale) return c.json({ success: false, data: null, error: 'Sale not found' }, 404);
   const details = await db.select().from(schema.saleSaleDetail).where(eq(schema.saleSaleDetail.saleId, id));
