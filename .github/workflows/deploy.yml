@@ -1,13 +1,17 @@
-name: Deploy Cloudflare Workers
+name: Deploy to Cloudflare
 
 on:
   push:
     branches:
-      - main
+      - master
       - staging
 
 jobs:
-  deploy:
+  # ─────────────────────────────────────────
+  # Job 1: API → Cloudflare Workers
+  # ─────────────────────────────────────────
+  deploy-api:
+    name: Deploy API (Workers)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -17,12 +21,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+          cache-dependency-path: api/package-lock.json
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install API Dependencies
+        run: npm ci
         working-directory: ./api
 
-      - name: Deploy to Staging
+      - name: Deploy API to Staging
         if: github.ref == 'refs/heads/staging'
         uses: cloudflare/wrangler-action@v3
         with:
@@ -31,11 +37,97 @@ jobs:
           workingDirectory: ./api
           command: deploy --env staging
 
-      - name: Deploy to Production
-        if: github.ref == 'refs/heads/main'
+      - name: Deploy API to Production
+        if: github.ref == 'refs/heads/master'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: ./api
           command: deploy --env production
+
+  # ─────────────────────────────────────────
+  # Job 2: SaaS App → Cloudflare Pages
+  # ─────────────────────────────────────────
+  deploy-saas:
+    name: Deploy SaaS (Pages)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/saas/package-lock.json
+
+      - name: Install SaaS Dependencies
+        run: npm ci
+        working-directory: ./app/saas
+
+      - name: Build SaaS App
+        run: npm run build
+        working-directory: ./app/saas
+
+      - name: Deploy SaaS to Staging
+        if: github.ref == 'refs/heads/staging'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ./app/saas
+          command: pages deploy dist --project-name=kaung-thant-saas --branch=staging
+
+      - name: Deploy SaaS to Production
+        if: github.ref == 'refs/heads/master'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ./app/saas
+          command: pages deploy dist --project-name=kaung-thant-saas --branch=main
+
+  # ─────────────────────────────────────────
+  # Job 3: POS App → Cloudflare Pages
+  # ─────────────────────────────────────────
+  deploy-pos:
+    name: Deploy POS (Pages)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/pos/package-lock.json
+
+      - name: Install POS Dependencies
+        run: npm ci
+        working-directory: ./app/pos
+
+      - name: Build POS App
+        run: npm run build
+        working-directory: ./app/pos
+
+      - name: Deploy POS to Staging
+        if: github.ref == 'refs/heads/staging'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ./app/pos
+          command: pages deploy dist --project-name=kaung-thant-pos --branch=staging
+
+      - name: Deploy POS to Production
+        if: github.ref == 'refs/heads/master'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ./app/pos
+          command: pages deploy dist --project-name=kaung-thant-pos --branch=main

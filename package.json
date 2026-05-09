@@ -1,0 +1,20 @@
+{
+  "name": "kaung-thant-enterprise",
+  "private": true,
+  "scripts": {
+    "dev:api": "npm run dev --workspace=api",
+    "dev:saas": "npm run dev --workspace=app/saas",
+    "dev:pos": "npm run dev --workspace=app/pos",
+    "build:saas": "npm run build --workspace=app/saas",
+    "build:pos": "npm run build --workspace=app/pos",
+    "deploy:api": "npm run deploy --workspace=api",
+    "deploy:saas": "npm run deploy --workspace=app/saas",
+    "deploy:pos": "npm run deploy --workspace=app/pos",
+    "deploy:all": "npm run deploy:api && npm run deploy:saas && npm run deploy:pos"
+  },
+  "workspaces": [
+    "api",
+    "app/saas",
+    "app/pos"
+  ]
+}
