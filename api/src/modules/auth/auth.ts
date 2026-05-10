@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { drizzle } from 'drizzle-orm/d1';
 import { eq } from 'drizzle-orm';
 import { saasUsers, tenants } from '../../db/master.schema';
-import { hashPassword, verifyPassword, signToken } from '../../shared/lib/security';
+import { hashPassword, verifyPassword, signToken, DUMMY_HASH } from '../../shared/lib/security';
 import { loginSchema, registerSchema } from '../../shared/schemas/auth';
 import { ProvisioningService } from '../../shared/services/provisioning';
 import { rateLimit } from '../../shared/middleware/ratelimit';
@@ -14,7 +14,7 @@ const authAPI = new Hono<{ Bindings: Env }>();
 authAPI.post('/register', async (c) => {
   const db = drizzle(c.env.DB);
   const body = await c.req.json();
-  
+
   const validation = registerSchema.safeParse(body);
   if (!validation.success) {
     return c.json({ success: false, data: null, error: validation.error.message }, 400);
@@ -64,10 +64,10 @@ authAPI.post('/register', async (c) => {
     const provisioning = new ProvisioningService(c.env.DB);
     c.executionCtx.waitUntil(provisioning.initializeTenant());
 
-    return c.json({ 
-      success: true, 
-      data: { userId, tenantId, subdomain, provisioned: true }, 
-      error: null 
+    return c.json({
+      success: true,
+      data: { userId, tenantId, subdomain, provisioned: true },
+      error: null
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -93,6 +93,7 @@ authAPI.post('/login', loginRateLimiter, async (c) => {
   try {
     const user = await db.select().from(saasUsers).where(eq(saasUsers.email, email)).limit(1);
     if (user.length === 0) {
+      await verifyPassword(password, DUMMY_HASH);
       return c.json({ success: false, data: null, error: 'Invalid email or password' }, 401);
     }
 
@@ -104,7 +105,7 @@ authAPI.post('/login', loginRateLimiter, async (c) => {
     // Find the tenant associated with this user (Simplification: assuming 1 tenant for now)
     // In a full RBAC system, you'd check tenant_users_map
     const tenant = await db.select().from(tenants).limit(1); // Placeholder logic
-    
+
     const token = await signToken({
       userId: user[0].id,
       email: user[0].email,
@@ -113,6 +114,81 @@ authAPI.post('/login', loginRateLimiter, async (c) => {
     }, c.env.JWT_SECRET);
 
     return c.json({ success: true, data: { token }, error: null });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return c.json({ success: false, data: null, error: message }, 500);
+  }
+});
+
+/**
+ * POS LOGIN: Tenant-specific login for Owner/Manager/Cashier
+ */
+import { posLoginSchema } from '../../shared/schemas/auth';
+
+authAPI.post('/pos/login', async (c) => {
+  const db = drizzle(c.env.DB);
+  const body = await c.req.json();
+
+  const validation = posLoginSchema.safeParse(body);
+  if (!validation.success) {
+    return c.json({ success: false, data: null, error: validation.error.message }, 400);
+  }
+
+  const { subdomain, username, password } = validation.data;
+
+  try {
+    const tenant = await db.select().from(tenants).where(eq(tenants.subdomain, subdomain)).limit(1);
+    if (tenant.length === 0) {
+      await verifyPassword(password, DUMMY_HASH);
+      return c.json({ success: false, data: null, error: 'Tenant not found' }, 404);
+    }
+
+    const tData = tenant[0];
+    let role: string | null = null;
+    let passwordHash: string | null = null;
+
+    if (username === tData.ownerUsername) {
+      role = 'owner';
+      passwordHash = tData.ownerPassword;
+    } else if (username === tData.managerUsername) {
+      role = 'manager';
+      passwordHash = tData.managerPassword;
+    } else if (username === tData.cashierUsername) {
+      role = 'cashier';
+      passwordHash = tData.cashierPassword;
+    }
+
+    if (!role || !passwordHash) {
+      await verifyPassword(password, DUMMY_HASH);
+      return c.json({ success: false, data: null, error: 'Invalid username or role' }, 401);
+    }
+
+    const isValid = await verifyPassword(password, passwordHash);
+    if (!isValid) {
+      return c.json({ success: false, data: null, error: 'Invalid password' }, 401);
+    }
+
+    // Sign token for POS session
+    const token = await signToken({
+      userId: `${role}_${tData.id.substring(0, 8)}`,
+      email: `${username}@${subdomain}.pos`,
+      role: role,
+      subdomain: subdomain,
+      tenantId: tData.id
+    }, c.env.JWT_SECRET);
+
+    return c.json({
+      success: true,
+      data: {
+        token,
+        user: {
+          username,
+          role,
+          tenantName: tData.name
+        }
+      },
+      error: null
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return c.json({ success: false, data: null, error: message }, 500);

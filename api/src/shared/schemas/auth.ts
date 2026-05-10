@@ -11,3 +11,9 @@ export const registerSchema = z.object({
   name: z.string().min(2),
   subdomain: z.string().min(3).regex(/^[a-z0-9-]+$/),
 });
+
+export const posLoginSchema = z.object({
+  subdomain: z.string(),
+  username: z.string(),
+  password: z.string(),
+});

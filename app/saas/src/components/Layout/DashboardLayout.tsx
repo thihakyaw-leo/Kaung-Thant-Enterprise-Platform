@@ -10,7 +10,6 @@ import {
   X,
   Bell,
   Search,
-  LucideIcon,
   LifeBuoy,
   ChevronDown,
   LogOut,
@@ -18,6 +17,7 @@ import {
   ShieldCheck,
   Receipt
 } from 'lucide-react';
+import { ElementType } from 'react';
 import { cn } from '../../utils/cn';
 import { useUIStore } from '../../store/useUIStore';
 import { useTranslation } from 'react-i18next';
@@ -28,7 +28,7 @@ import { useAuthStore } from '../../features/auth/useAuthStore';
 
 interface SidebarItemProps {
   to: string;
-  icon: LucideIcon;
+  icon: ElementType;
   label: string;
 }
 
@@ -45,7 +45,7 @@ const SidebarItem = ({ to, icon: Icon, label }: SidebarItemProps) => (
 
 interface CollapsibleSidebarItemProps {
   label: string;
-  icon: LucideIcon;
+  icon: ElementType;
   children: React.ReactNode;
   isOpen: boolean;
   onClick: () => void;

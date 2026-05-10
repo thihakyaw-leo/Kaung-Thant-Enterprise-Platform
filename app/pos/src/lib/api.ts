@@ -41,17 +41,22 @@ export const api = {
   setToken: (t: string) => localStorage.setItem('kt_token', t),
   clearToken: () => localStorage.removeItem('kt_token'),
 
-  login: (username: string, password: string) =>
-    request<{ token: string; redirect_url?: string }>('/auth/login', {
+  login: (username: string, password: string) => {
+    // Dynamically extract subdomain from hostname (e.g., 'tenant1.kaungthant.shop' -> 'tenant1')
+    const hostname = window.location.hostname;
+    const subdomain = hostname.includes('.') ? hostname.split('.')[0] : 'demo';
+
+    return request<{ token: string; user: any }>('/auth/pos/login', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
-    }),
+      body: JSON.stringify({ subdomain, username, password }),
+    });
+  },
 
   // Dashboard / Reports
   getDailySales: (locationId?: string) => request<Record<string, any>[]>(`/reports/daily-sales?location_id=${locationId || ''}`),
-  getSalesByCategory: (params: Record<string, string | undefined> = {}) => 
+  getSalesByCategory: (params: Record<string, string | undefined> = {}) =>
     request<Record<string, any>[]>(`/reports/sales-by-category?${new URLSearchParams(params as Record<string, string>).toString()}`),
-  getTopProducts: (params: Record<string, string | undefined> = {}) => 
+  getTopProducts: (params: Record<string, string | undefined> = {}) =>
     request<Record<string, any>[]>(`/reports/top-products?${new URLSearchParams(params as Record<string, string>).toString()}`),
   getStockValuation: (locationId?: string) => request<any>(`/reports/stock-valuation?location_id=${locationId || ''}`),
 
@@ -174,7 +179,7 @@ export const api = {
 
   // Config & Settings
   getBusinessProfile: () => request<Record<string, unknown>>('/config/business'),
-  updateBusinessProfile: (data: unknown) => 
+  updateBusinessProfile: (data: unknown) =>
     request<void>('/config/business', { method: 'POST', body: JSON.stringify(data) }),
   getSettings: () => request<Record<string, string>>('/config/settings'),
   updateSettings: (data: unknown) =>

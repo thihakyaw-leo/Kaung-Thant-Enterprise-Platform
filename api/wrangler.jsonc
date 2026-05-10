@@ -6,10 +6,30 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "secrets": {
+    "required": [
+      "JWT_SECRET",
+      "TELEGRAM_BOT_TOKEN",
+      "TELEGRAM_CHAT_ID",
+      "GOOGLE_GENERATIVE_AI_API_KEY",
+      "KBZ_APP_KEY",
+      "KBZ_MERCHANT_CODE",
+      "WAVE_MERCHANT_ID"
+    ]
+  },
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
   },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "SessionCoordinator",
+        "LocationStockCoordinator"
+      ]
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
@@ -22,17 +42,86 @@
     {
       "binding": "POS_SETTINGS",
       "id": "c5802fc866b7449e84ce7ebe8205284c"
+    },
+    {
+      "binding": "KV_CACHE",
+      "id": "991444797845499a84820938bb807ba2"
     }
   ],
   "r2_buckets": [
     {
       "binding": "R2_ARCHIVE",
       "bucket_name": "pos-archive-prod"
+    },
+    {
+      "binding": "R2_MEDIA",
+      "bucket_name": "admin-r2"
     }
   ],
+  "browser": {
+    "binding": "BROWSER",
+    "remote": true
+  },
+  "analytics_engine_datasets": [
+    {
+      "binding": "API_METRICS",
+      "dataset": "api_metrics"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "AUDIT_QUEUE",
+        "queue": "audit-queue"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "audit-queue",
+        "max_batch_size": 10,
+        "max_batch_timeout": 5,
+        "max_retries": 3
+      }
+    ]
+  },
+  "workflows": [
+    {
+      "binding": "ORDER_WORKFLOW",
+      "name": "order-processing",
+      "class_name": "OrderProcessingWorkflow"
+    },
+    {
+      "binding": "REPORT_WORKFLOW",
+      "name": "monthly-report",
+      "class_name": "MonthlyReportWorkflow"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "SESSION_COORDINATOR",
+        "class_name": "SessionCoordinator"
+      },
+      {
+        "name": "STOCK_COORDINATOR",
+        "class_name": "LocationStockCoordinator"
+      }
+    ]
+  },
   "env": {
     "staging": {
       "name": "kaung-thant-pos-api-staging",
+      "secrets": {
+        "required": [
+          "JWT_SECRET",
+          "TELEGRAM_BOT_TOKEN",
+          "TELEGRAM_CHAT_ID",
+          "GOOGLE_GENERATIVE_AI_API_KEY",
+          "KBZ_APP_KEY",
+          "KBZ_MERCHANT_CODE",
+          "WAVE_MERCHANT_ID"
+        ]
+      },
       "d1_databases": [
         {
           "binding": "DB",
@@ -45,13 +134,88 @@
         {
           "binding": "POS_SETTINGS",
           "id": "c5802fc866b7449e84ce7ebe8205284c"
+        },
+        {
+          "binding": "KV_CACHE",
+          "id": "991444797845499a84820938bb807ba2"
         }
       ],
+      "r2_buckets": [
+        {
+          "binding": "R2_ARCHIVE",
+          "bucket_name": "pos-archive-prod"
+        },
+        {
+          "binding": "R2_MEDIA",
+          "bucket_name": "admin-r2"
+        }
+      ],
+      "browser": {
+        "binding": "BROWSER",
+        "remote": true
+      },
+      "analytics_engine_datasets": [
+        {
+          "binding": "API_METRICS",
+          "dataset": "api_metrics_staging"
+        }
+      ],
+      "queues": {
+        "producers": [
+          {
+            "binding": "AUDIT_QUEUE",
+            "queue": "audit-queue-staging"
+          }
+        ],
+        "consumers": [
+          {
+            "queue": "audit-queue-staging",
+            "max_batch_size": 10,
+            "max_batch_timeout": 5,
+            "max_retries": 3
+          }
+        ]
+      },
+      "workflows": [
+        {
+          "binding": "ORDER_WORKFLOW",
+          "name": "order-processing-staging",
+          "class_name": "OrderProcessingWorkflow"
+        },
+        {
+          "binding": "REPORT_WORKFLOW",
+          "name": "monthly-report-staging",
+          "class_name": "MonthlyReportWorkflow"
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "SESSION_COORDINATOR",
+            "class_name": "SessionCoordinator"
+          },
+          {
+            "name": "STOCK_COORDINATOR",
+            "class_name": "LocationStockCoordinator"
+          }
+        ]
+      },
       "vars": {
         "ENVIRONMENT": "staging"
       }
     },
     "production": {
+      "secrets": {
+        "required": [
+          "JWT_SECRET",
+          "TELEGRAM_BOT_TOKEN",
+          "TELEGRAM_CHAT_ID",
+          "GOOGLE_GENERATIVE_AI_API_KEY",
+          "KBZ_APP_KEY",
+          "KBZ_MERCHANT_CODE",
+          "WAVE_MERCHANT_ID"
+        ]
+      },
       "d1_databases": [
         {
           "binding": "DB",
@@ -64,46 +228,72 @@
         {
           "binding": "POS_SETTINGS",
           "id": "c5802fc866b7449e84ce7ebe8205284c"
+        },
+        {
+          "binding": "KV_CACHE",
+          "id": "991444797845499a84820938bb807ba2"
         }
       ],
       "r2_buckets": [
         {
           "binding": "R2_ARCHIVE",
           "bucket_name": "pos-archive-prod"
+        },
+        {
+          "binding": "R2_MEDIA",
+          "bucket_name": "admin-r2"
         }
       ],
-      "secrets_store_secrets": [
+      "browser": {
+        "binding": "BROWSER",
+        "remote": true
+      },
+      "analytics_engine_datasets": [
         {
-          "binding": "CLOUDFLARE_ACCOUNT_ID",
-          "store_id": "b11356ff20c9459389214212b7fd7536",
-          "secret_name": "CLOUDFLARE_ACCOUNT_ID"
-        },
-        {
-          "binding": "CLOUDFLARE_API_TOKEN",
-          "store_id": "b11356ff20c9459389214212b7fd7536",
-          "secret_name": "CLOUDFLARE_API_TOKEN"
-        },
-        {
-          "binding": "GOOGLE_GENERATIVE_AI_API_KEY",
-          "store_id": "b11356ff20c9459389214212b7fd7536",
-          "secret_name": "GOOGLE_GENERATIVE_AI_API_KEY"
-        },
-        {
-          "binding": "JWT_SECRET",
-          "store_id": "b11356ff20c9459389214212b7fd7536",
-          "secret_name": "JWT_SECRET"
-        },
-        {
-          "binding": "TELEGRAM_BOT_TOKEN",
-          "store_id": "b11356ff20c9459389214212b7fd7536",
-          "secret_name": "TELEGRAM_BOT_TOKEN"
-        },
-        {
-          "binding": "TELEGRAM_CHAT_ID",
-          "store_id": "b11356ff20c9459389214212b7fd7536",
-          "secret_name": "TELEGRAM_CHAT_ID"
+          "binding": "API_METRICS",
+          "dataset": "api_metrics"
         }
       ],
+      "queues": {
+        "producers": [
+          {
+            "binding": "AUDIT_QUEUE",
+            "queue": "audit-queue"
+          }
+        ],
+        "consumers": [
+          {
+            "queue": "audit-queue",
+            "max_batch_size": 10,
+            "max_batch_timeout": 5,
+            "max_retries": 3
+          }
+        ]
+      },
+      "workflows": [
+        {
+          "binding": "ORDER_WORKFLOW",
+          "name": "order-processing",
+          "class_name": "OrderProcessingWorkflow"
+        },
+        {
+          "binding": "REPORT_WORKFLOW",
+          "name": "monthly-report",
+          "class_name": "MonthlyReportWorkflow"
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "SESSION_COORDINATOR",
+            "class_name": "SessionCoordinator"
+          },
+          {
+            "name": "STOCK_COORDINATOR",
+            "class_name": "LocationStockCoordinator"
+          }
+        ]
+      },
       "vars": {
         "ENVIRONMENT": "production"
       }

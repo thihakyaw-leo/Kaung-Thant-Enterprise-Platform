@@ -1,9 +1,9 @@
-import { 
-  Globe, 
-  Search, 
-  PauseCircle, 
-  PlayCircle, 
-  Trash2, 
+import {
+  Globe,
+  Search,
+  PauseCircle,
+  PlayCircle,
+  Trash2,
   ExternalLink,
   Plus,
   Loader2,
@@ -36,9 +36,14 @@ export const TenantsManagement = () => {
   const deleteTenant = useDeleteTenant();
   const createTenant = useCreateTenant();
   const updateTenant = useUpdateTenant();
-  
+
   const rootDomain = useMemo(() => {
-    return settings?.find(s => s.key === 'root_domain')?.value || 'kaungthant.shop';
+    const domain = settings?.find(s => s.key === 'root_domain')?.value;
+    if (domain) return domain;
+
+    // Fallback to primary_domain if root_domain is missing
+    const primary = settings?.find(s => s.key === 'primary_domain')?.value;
+    return primary || 'kaungthant.shop';
   }, [settings]);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,8 +59,8 @@ export const TenantsManagement = () => {
     { id: 'enterprise', name: t('tenants.plans.enterprise_edge'), price: '500k/mo', icon: Crown, color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
   ];
 
-  const filteredTenants = Array.isArray(tenants) ? tenants.filter(t => 
-    t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredTenants = Array.isArray(tenants) ? tenants.filter(t =>
+    t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     t.subdomain.toLowerCase().includes(searchTerm.toLowerCase())
   ) : [];
 
@@ -79,9 +84,9 @@ export const TenantsManagement = () => {
     e.preventDefault();
     if (!editingTenant) return;
     try {
-      await updateTenant.mutateAsync({ 
-        id: editingTenant.id, 
-        updates: editingTenant 
+      await updateTenant.mutateAsync({
+        id: editingTenant.id,
+        updates: editingTenant
       });
       setIsEditModalOpen(false);
       setEditingTenant(null);
@@ -92,10 +97,10 @@ export const TenantsManagement = () => {
 
   const handleToggleStatus = (tenant: Tenant) => {
     const newStatus = tenant.status === 'active' ? 'suspended' : 'active';
-    const message = newStatus === 'active' 
-      ? t('tenants.confirm_activate', { name: tenant.name }) 
+    const message = newStatus === 'active'
+      ? t('tenants.confirm_activate', { name: tenant.name })
       : t('tenants.confirm_suspend', { name: tenant.name });
-    
+
     if (confirm(message)) {
       updateStatus.mutate({ id: tenant.id, status: newStatus });
     }
@@ -118,7 +123,7 @@ export const TenantsManagement = () => {
           </h1>
           <p className="text-on-surface/60">{t('tenants.description')}</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-xl font-bold hover:bg-primary-container transition-all active:scale-95 shadow-lg shadow-primary/20"
         >
@@ -132,8 +137,8 @@ export const TenantsManagement = () => {
         <div className="glass rounded-2xl p-4 md:col-span-2 flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="relative group w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface/40 group-focus-within:text-primary transition-colors" size={18} />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder={t('common.search')}
               className="w-full bg-surface-container-low/50 border border-outline-variant/10 rounded-xl py-2.5 pl-10 pr-4 text-on-surface outline-none focus:border-primary/50 transition-all focus:ring-1 focus:ring-primary/20"
               value={searchTerm}
@@ -183,7 +188,7 @@ export const TenantsManagement = () => {
               ) : filteredTenants.map((tenant) => {
                 const plan = plans.find(p => p.id === tenant.plan_id) || plans[0];
                 const PlanIcon = plan.icon;
-                
+
                 return (
                   <tr key={tenant.id} className="hover:bg-white/2 transition-colors group">
                     <td className="px-6 py-5">
@@ -217,8 +222,8 @@ export const TenantsManagement = () => {
                     <td className="px-6 py-5">
                       <span className={cn(
                         "text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border",
-                        tenant.status === 'active' 
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                        tenant.status === 'active'
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                           : "bg-rose-500/10 text-rose-400 border-rose-500/20"
                       )}>
                         {t(`common.${tenant.status}`)}
@@ -229,14 +234,14 @@ export const TenantsManagement = () => {
                     </td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0">
-                        <button 
+                        <button
                           onClick={() => handleEditOpen(tenant)}
                           className="p-2 hover:bg-surface-bright rounded-lg text-primary transition-all"
                           title={t('common.edit')}
                         >
                           <Edit3 size={18} />
                         </button>
-                        <button 
+                        <button
                           onClick={async () => {
                             if (confirm(`Impersonate ${tenant.name}? You will be logged into their dashboard.`)) {
                               const res = await api.post(`/api/master/tenants/${tenant.id}/impersonate`);
@@ -249,7 +254,7 @@ export const TenantsManagement = () => {
                         >
                           <Monitor size={18} />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleToggleStatus(tenant)}
                           className={cn(
                             "p-2 hover:bg-surface-bright rounded-lg transition-all",
@@ -259,16 +264,16 @@ export const TenantsManagement = () => {
                         >
                           {tenant.status === 'active' ? <PauseCircle size={18} /> : <PlayCircle size={18} />}
                         </button>
-                        <a 
-                          href={`https://${tenant.subdomain}.${rootDomain}`} 
-                          target="_blank" 
+                        <a
+                          href={`https://${tenant.subdomain}.${rootDomain}`}
+                          target="_blank"
                           rel="noreferrer"
                           className="p-2 hover:bg-surface-bright rounded-lg text-secondary transition-all"
                           title={t('common.open_portal')}
                         >
                           <ExternalLink size={18} />
                         </a>
-                        <button 
+                        <button
                           onClick={() => handleDelete(tenant.id, tenant.name)}
                           className="p-2 hover:bg-error/10 rounded-lg text-on-surface/30 hover:text-error transition-all"
                           title={t('common.terminate')}
@@ -298,9 +303,9 @@ export const TenantsManagement = () => {
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-on-surface/60 uppercase tracking-widest">{t('tenants.business_name')}</label>
-                <input 
+                <input
                   required
-                  type="text" 
+                  type="text"
                   placeholder={t('tenants.enter_business_name')}
                   className="w-full bg-surface-container-low border border-outline-variant/10 rounded-xl py-3 px-4 text-white outline-none focus:border-primary/50 transition-all"
                   value={newTenant.name}
@@ -310,9 +315,9 @@ export const TenantsManagement = () => {
               <div className="space-y-2">
                 <label className="text-xs font-bold text-on-surface/60 uppercase tracking-widest">{t('tenants.subdomain')}</label>
                 <div className="relative">
-                  <input 
+                  <input
                     required
-                    type="text" 
+                    type="text"
                     placeholder="kaungthant"
                     className="w-full bg-surface-container-low border border-outline-variant/10 rounded-xl py-3 px-4 pr-24 text-white outline-none focus:border-primary/50 transition-all"
                     value={newTenant.subdomain}
@@ -332,8 +337,8 @@ export const TenantsManagement = () => {
                       onClick={() => setNewTenant({...newTenant, planId: plan.id})}
                       className={cn(
                         "p-3 rounded-xl border text-left transition-all",
-                        newTenant.planId === plan.id 
-                          ? "bg-primary/20 border-primary text-white shadow-lg shadow-primary/10" 
+                        newTenant.planId === plan.id
+                          ? "bg-primary/20 border-primary text-white shadow-lg shadow-primary/10"
                           : "bg-surface-container-low border-white/5 text-on-surface/50 hover:border-white/20"
                       )}
                     >
@@ -371,7 +376,7 @@ export const TenantsManagement = () => {
               </div>
 
               <div className="pt-4">
-                <button 
+                <button
                   type="submit"
                   disabled={createTenant.isPending}
                   className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold hover:bg-primary-container transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
@@ -398,7 +403,7 @@ export const TenantsManagement = () => {
                 <X size={20} className="text-on-surface/60" />
               </button>
             </div>
-            
+
             <form onSubmit={handleUpdate} className="flex-1 overflow-y-auto p-6 space-y-8">
               {/* Basic Info Section */}
               <section className="space-y-4">
@@ -453,9 +458,9 @@ export const TenantsManagement = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">{t('tenants.business_name')}</label>
-                    <input 
+                    <input
                       required
-                      type="text" 
+                      type="text"
                       title={t('tenants.business_name')}
                       placeholder={t('tenants.enter_business_name')}
                       className="w-full bg-surface-container-low border border-outline-variant/10 rounded-xl py-2.5 px-4 text-white outline-none focus:border-primary/50 transition-all"
@@ -465,9 +470,9 @@ export const TenantsManagement = () => {
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest">{t('tenants.subdomain')}</label>
-                    <input 
+                    <input
                       required
-                      type="text" 
+                      type="text"
                       title={t('tenants.subdomain')}
                       placeholder={t('tenants.subdomain')}
                       className="w-full bg-surface-container-low border border-outline-variant/10 rounded-xl py-2.5 px-4 text-on-surface/50 outline-none cursor-not-allowed"
@@ -494,8 +499,8 @@ export const TenantsManagement = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-[10px] text-on-surface/40 font-medium">Username</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="owner_admin"
                         className="w-full bg-black/20 border border-white/5 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-secondary/30"
                         value={editingTenant.ownerUsername || ''}
@@ -504,8 +509,8 @@ export const TenantsManagement = () => {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] text-on-surface/40 font-medium">Password</label>
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         placeholder="••••••••"
                         className="w-full bg-black/20 border border-white/5 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-secondary/30"
                         value={editingTenant.ownerPassword || ''}
@@ -524,8 +529,8 @@ export const TenantsManagement = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-[10px] text-on-surface/40 font-medium">Username</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="manager_pos"
                         className="w-full bg-black/20 border border-white/5 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-primary/30"
                         value={editingTenant.managerUsername || ''}
@@ -534,8 +539,8 @@ export const TenantsManagement = () => {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] text-on-surface/40 font-medium">Password</label>
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         placeholder="••••••••"
                         className="w-full bg-black/20 border border-white/5 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-primary/30"
                         value={editingTenant.managerPassword || ''}
@@ -554,8 +559,8 @@ export const TenantsManagement = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-[10px] text-on-surface/40 font-medium">Username</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="cashier_01"
                         className="w-full bg-black/20 border border-white/5 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-white/10"
                         value={editingTenant.cashierUsername || ''}
@@ -564,8 +569,8 @@ export const TenantsManagement = () => {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] text-on-surface/40 font-medium">Password</label>
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         placeholder="••••••••"
                         className="w-full bg-black/20 border border-white/5 rounded-lg py-2 px-3 text-sm text-white outline-none focus:border-white/10"
                         value={editingTenant.cashierPassword || ''}
@@ -577,14 +582,14 @@ export const TenantsManagement = () => {
               </section>
 
               <div className="pt-4 flex gap-3">
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
                   className="flex-1 bg-white/5 text-white py-3 rounded-xl font-bold hover:bg-white/10 transition-all"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   disabled={updateTenant.isPending}
                   className="flex-2 bg-primary text-on-primary py-3 rounded-xl font-bold hover:bg-primary-container transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/20"

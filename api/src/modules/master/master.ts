@@ -6,7 +6,7 @@ import * as schema from '../../db/master.schema';
 import { checkPermission } from '../../shared/middleware/rbac';
 import { hashPassword, verifyPassword } from '../../shared/lib/security';
 
-const masterAPI = new Hono<{ 
+const masterAPI = new Hono<{
   Bindings: Env;
   Variables: { user: any };
 }>();
@@ -43,10 +43,26 @@ masterAPI.patch('/tenants/:id', async (c) => {
   const body = await c.req.json();
 
   // Whitelist: prevent mass-assignment of sensitive fields
-  const ALLOWED_TENANT_FIELDS = ['name', 'plan_id', 'status', 'ownerUsername', 'managerUsername', 'cashierUsername'];
-  const updates = Object.fromEntries(
-    Object.entries(body).filter(([k]) => ALLOWED_TENANT_FIELDS.includes(k))
-  );
+  const ALLOWED_TENANT_FIELDS = [
+    'name', 'plan_id', 'status',
+    'ownerUsername', 'ownerPassword',
+    'managerUsername', 'managerPassword',
+    'cashierUsername', 'cashierPassword'
+  ];
+
+  const updates: any = {};
+  for (const field of ALLOWED_TENANT_FIELDS) {
+    if (body[field] !== undefined) {
+      if (field.toLowerCase().includes('password')) {
+        // Only hash and update if password is not empty
+        if (body[field].length > 0) {
+          updates[field] = await hashPassword(body[field]);
+        }
+      } else {
+        updates[field] = body[field];
+      }
+    }
+  }
 
   if (Object.keys(updates).length === 0) {
     return c.json({ success: false, error: 'No valid fields to update' }, 400);
@@ -56,7 +72,7 @@ masterAPI.patch('/tenants/:id', async (c) => {
     await db.update(schema.tenants)
       .set(updates)
       .where(eq(schema.tenants.id, id));
-    
+
     return c.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -94,6 +110,19 @@ masterAPI.patch('/pricing-plans/:id', async (c) => {
   }
 });
 
+masterAPI.delete('/pricing-plans/:id', async (c) => {
+  const db = drizzle(c.env.DB);
+  const id = c.req.param('id');
+
+  try {
+    await db.delete(schema.pricingPlans).where(eq(schema.pricingPlans.id, id));
+    return c.json({ success: true });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return c.json({ success: false, error: message }, 500);
+  }
+});
+
 /**
  * TOGGLE TENANT STATUS
  */
@@ -110,7 +139,7 @@ masterAPI.patch('/tenants/:id/status', async (c) => {
     await db.update(schema.tenants)
       .set({ status })
       .where(eq(schema.tenants.id, id));
-    
+
     return c.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -124,9 +153,15 @@ masterAPI.patch('/tenants/:id/status', async (c) => {
 masterAPI.delete('/tenants/:id', async (c) => {
   const db = drizzle(c.env.DB);
   const id = c.req.param('id');
-  
+
   try {
-    await db.delete(schema.tenants).where(eq(schema.tenants.id, id));
+    // 1. Delete related records first due to foreign key constraints
+    await db.delete(schema.invoices).where(eq(schema.invoices.tenantId, id));
+    await db.delete(schema.subscriptions).where(eq(schema.subscriptions.tenantId, id));
+
+    // 2. Delete the tenant
+    const result = await db.delete(schema.tenants).where(eq(schema.tenants.id, id));
+
     return c.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -142,12 +177,12 @@ masterAPI.post('/tenants', async (c) => {
   const { name, subdomain, planId } = await c.req.json();
   const id = crypto.randomUUID();
   const d1_database_id = `DB_${subdomain.toUpperCase()}_${Math.floor(Math.random() * 1000)}`;
-  
+
   try {
     const now = Math.floor(Date.now() / 1000);
     const thirtyDaysLater = now + (30 * 24 * 60 * 60);
 
-    // Using prepare/run for atomic execution within D1 if possible, 
+    // Using prepare/run for atomic execution within D1 if possible,
     // or just separate runs for simplicity in this context.
     await c.env.DB.prepare(
       'INSERT INTO tenants (id, name, subdomain, d1_database_id, plan_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
@@ -156,7 +191,7 @@ masterAPI.post('/tenants', async (c) => {
     await c.env.DB.prepare(
       'INSERT INTO subscriptions (id, tenant_id, plan_id, start_date, end_date, auto_renew, status) VALUES (?, ?, ?, ?, ?, ?, ?)'
     ).bind(`sub_${id.substring(0, 8)}`, id, planId || 'basic', now, thirtyDaysLater, 1, 'active').run();
-    
+
     return c.json({ success: true, data: { id } }, 201);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -169,23 +204,43 @@ masterAPI.post('/tenants', async (c) => {
  */
 masterAPI.get('/billing/stats', async (c) => {
   const db = drizzle(c.env.DB);
-  
+
   try {
-    const totalRevenue = await db.select({ 
-      sum: sql<number>`SUM(amount)` 
+    const totalRevenue = await db.select({
+      sum: sql<number>`SUM(amount)`
     }).from(schema.invoices).where(eq(schema.invoices.status, 'paid'));
+
+    const unpaidCount = await db.select({
+      count: sql<number>`COUNT(*)`
+    }).from(schema.invoices).where(eq(schema.invoices.status, 'unpaid'));
+
+    const tenantCount = await db.select({
+      count: sql<number>`COUNT(*)`
+    }).from(schema.tenants);
 
     const planDistribution = await db.select({
       plan: schema.tenants.plan_id,
       count: sql<number>`COUNT(*)`
     }).from(schema.tenants).groupBy(schema.tenants.plan_id);
 
-    return c.json({ 
-      success: true, 
-      data: { 
+    // Calculate MRR (simple sum of paid invoices this month)
+    const now = Math.floor(Date.now() / 1000);
+    const thirtyDaysAgo = now - (30 * 24 * 60 * 60);
+    const mrr = await db.select({
+      sum: sql<number>`SUM(amount)`
+    }).from(schema.invoices)
+      .where(sql`status = 'paid' AND created_at >= ${thirtyDaysAgo}`);
+
+    return c.json({
+      success: true,
+      data: {
         totalRevenue: totalRevenue[0]?.sum || 0,
-        distribution: planDistribution 
-      } 
+        unpaidCount: unpaidCount[0]?.count || 0,
+        tenantCount: tenantCount[0]?.count || 0,
+        mrr: mrr[0]?.sum || 0,
+        avgRevenuePerTenant: (totalRevenue[0]?.sum || 0) / (tenantCount[0]?.count || 1),
+        distribution: planDistribution
+      }
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -198,7 +253,7 @@ masterAPI.get('/billing/stats', async (c) => {
  */
 masterAPI.get('/analytics/dashboard', async (c) => {
   const db = drizzle(c.env.DB);
-  
+
   try {
     const now = new Date();
     const sixMonthsAgo = Math.floor(new Date(now.getFullYear(), now.getMonth() - 5, 1).getTime() / 1000);
@@ -290,11 +345,11 @@ masterAPI.get('/subscriptions', async (c) => {
 masterAPI.get('/me', async (c) => {
   const db = drizzle(c.env.DB);
   const user = c.get('user');
-  
+
   try {
     const userData = await db.select().from(schema.saasUsers).where(eq(schema.saasUsers.id, user.id)).get();
     if (!userData) return c.json({ success: false, error: 'User not found' }, 404);
-    
+
     // Remove sensitive data
     const { passwordHash, ...safeUser } = userData;
     return c.json({ success: true, data: safeUser });
@@ -309,7 +364,7 @@ masterAPI.patch('/me', async (c) => {
   const db = drizzle(c.env.DB);
   const user = c.get('user');
   const updates = await c.req.json();
-  
+
   // Only allow certain fields
   const allowed = ['fullName', 'email', 'avatarUrl'];
   const filtered = Object.keys(updates)
@@ -372,7 +427,7 @@ masterAPI.get('/users', async (c) => {
 masterAPI.post('/users', async (c) => {
   const db = drizzle(c.env.DB);
   const { email, fullName, password, role, permissions } = await c.req.json();
-  
+
   try {
     const id = crypto.randomUUID();
     const passwordHash = await hashPassword(password);
@@ -388,7 +443,7 @@ masterAPI.post('/users', async (c) => {
       permissions,
       createdAt: Math.floor(Date.now() / 1000)
     });
-    
+
     return c.json({ success: true, data: { id } }, 201);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -475,7 +530,7 @@ masterAPI.patch('/settings', async (c) => {
 masterAPI.get('/health', async (c) => {
   const db = drizzle(c.env.DB);
   const startTime = Date.now();
-  
+
   try {
     // 1. D1 Database Latency & Real Counts
     const d1Start = Date.now();
@@ -536,8 +591,8 @@ masterAPI.get('/health', async (c) => {
       }
     }
 
-    return c.json({ 
-      success: true, 
+    return c.json({
+      success: true,
       data: {
         status: 'operational',
         services: {
@@ -558,7 +613,7 @@ masterAPI.get('/health', async (c) => {
           { region: `${colo} (${city})`, load: 100 }
         ],
         timestamp: Date.now()
-      } 
+      }
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -586,7 +641,7 @@ masterAPI.get('/assets/:key{.+}', async (c) => {
 masterAPI.post('/upload-avatar', async (c) => {
   const body = await c.req.parseBody();
   const file = body['file'] as File;
-  
+
   if (!file) {
     return c.json({ success: false, error: 'No file provided' }, 400);
   }
@@ -595,7 +650,7 @@ masterAPI.post('/upload-avatar', async (c) => {
   try {
     await c.env.R2_ARCHIVE.put(key, file);
     // Note: In production, use a custom domain or R2 public URL
-    const url = `/api/master/assets/${key}`; 
+    const url = `/api/master/assets/${key}`;
     return c.json({ success: true, url });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -626,7 +681,7 @@ masterAPI.post('/tenants/:id/impersonate', async (c) => {
   try {
     const tenant = await db.select().from(schema.tenants).where(sql`id = ${id}`).get();
     if (!tenant) return c.json({ success: false, error: 'Tenant not found' }, 404);
-    
+
     // Fetch root domain from settings
     const rootDomainSetting = await db.select()
       .from(schema.systemSettings)
@@ -677,9 +732,27 @@ masterAPI.get('/billing/invoices', async (c) => {
  * CREATE/UPDATE PRICING PLAN
  */
 masterAPI.post('/billing/plans', async (c) => {
-  const body = await c.req.json();
-  // Logic to update pricing plans in DB
-  return c.json({ success: true, message: 'Plan updated successfully' });
+  const db = drizzle(c.env.DB);
+  const { name, price, currency, billingCycle, maxUsers, maxProducts, features } = await c.req.json();
+
+  try {
+    const id = name.toLowerCase().replace(/\s+/g, '-');
+    await db.insert(schema.pricingPlans).values({
+      id,
+      name,
+      price: Number(price),
+      currency: currency || 'MMK',
+      billingCycle: billingCycle || 'monthly',
+      maxUsers: Number(maxUsers),
+      maxProducts: Number(maxProducts),
+      features: JSON.stringify(features || []),
+    });
+
+    return c.json({ success: true, data: { id } }, 201);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return c.json({ success: false, error: message }, 500);
+  }
 });
 
 /**
