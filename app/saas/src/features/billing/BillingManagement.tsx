@@ -1,11 +1,11 @@
-import { 
-  CreditCard, 
-  Download, 
-  AlertCircle, 
-  TrendingUp, 
-  DollarSign, 
-  Plus, 
-  Search, 
+import {
+  CreditCard,
+  Download,
+  AlertCircle,
+  TrendingUp,
+  DollarSign,
+  Plus,
+  Search,
   Filter,
   Eye,
   FileText,
@@ -16,20 +16,21 @@ import {
   ChevronRight,
   Globe,
   RefreshCcw,
-  X
+  X,
+  Trash2
 } from 'lucide-react';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
 } from 'recharts';
 import { useState } from 'react';
 import { cn } from '../../utils/cn';
-import { useInvoices, useBillingStats, usePricingPlans, useCreatePricingPlan } from './hooks/useSubscriptions';
+import { useInvoices, useBillingStats, usePricingPlans, useCreatePricingPlan, useUpdatePricingPlan, useDeletePricingPlan, PricingPlan } from './hooks/useSubscriptions';
 
 
 export const BillingManagement = () => {
@@ -38,8 +39,12 @@ export const BillingManagement = () => {
   const { data: stats } = useBillingStats();
   const { data: plans } = usePricingPlans();
   const createPlan = useCreatePricingPlan();
+  const updatePlan = useUpdatePricingPlan();
+  const deletePlan = useDeletePricingPlan();
 
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [newPlan, setNewPlan] = useState({
     name: '',
     price: '',
@@ -53,21 +58,71 @@ export const BillingManagement = () => {
   const handleCreatePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createPlan.mutateAsync({
-        name: newPlan.name,
-        price: Number(newPlan.price),
-        currency: 'MMK',
-        billingCycle: newPlan.billingCycle,
-        maxUsers: Number(newPlan.maxUsers),
-        maxProducts: Number(newPlan.maxProducts),
-        features: JSON.stringify([newPlan.description])
-      });
+      if (isEditMode && selectedPlanId) {
+        await updatePlan.mutateAsync({
+          id: selectedPlanId,
+          updates: {
+            name: newPlan.name,
+            price: Number(newPlan.price),
+            billingCycle: newPlan.billingCycle,
+            maxUsers: Number(newPlan.maxUsers),
+            maxProducts: Number(newPlan.maxProducts),
+            features: JSON.stringify([newPlan.description])
+          }
+        });
+      } else {
+        await createPlan.mutateAsync({
+          name: newPlan.name,
+          price: Number(newPlan.price),
+          currency: 'MMK',
+          billingCycle: newPlan.billingCycle,
+          maxUsers: Number(newPlan.maxUsers),
+          maxProducts: Number(newPlan.maxProducts),
+          features: JSON.stringify([newPlan.description])
+        });
+      }
       setShowPlanModal(false);
       setNewPlan({ name: '', price: '', maxUsers: '', maxProducts: '', description: '', billingCycle: 'monthly' });
+      setIsEditMode(false);
+      setSelectedPlanId(null);
     } catch (err) {
-      console.error('Failed to create plan:', err);
+      console.error('Failed to save plan:', err);
     }
   };
+
+  const handleEditPlan = (plan: PricingPlan) => {
+    setNewPlan({
+      name: plan.name,
+      price: plan.price.toString(),
+      maxUsers: plan.maxUsers.toString(),
+      maxProducts: plan.maxProducts.toString(),
+      description: plan.features ? JSON.parse(plan.features)[0] || '' : '',
+      billingCycle: plan.billingCycle
+    });
+    setSelectedPlanId(plan.id);
+    setIsEditMode(true);
+    setShowPlanModal(true);
+  };
+
+  const handleDeletePlan = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this pricing plan?')) {
+      try {
+        await deletePlan.mutateAsync(id);
+      } catch (err) {
+        console.error('Failed to delete plan:', err);
+      }
+    }
+  };
+
+  // Revenue projection chart data
+  const projectionData = [
+    { name: 'May', revenue: 42500, projection: 42500 },
+    { name: 'Jun', revenue: 44000, projection: 46000 },
+    { name: 'Jul', revenue: null, projection: 51000 },
+    { name: 'Aug', revenue: null, projection: 58000 },
+    { name: 'Sep', revenue: null, projection: 65000 },
+    { name: 'Oct', revenue: null, projection: 74000 },
+  ];
 
   const handleExport = () => {
     setIsExporting(true);
@@ -90,16 +145,16 @@ export const BillingManagement = () => {
           <p className="text-on-surface/60">Revenue tracking, plan management and invoice oversight for all tenants.</p>
         </div>
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={handleExport}
             disabled={isExporting}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center gap-2 border border-white/5 uppercase tracking-widest disabled:opacity-50" 
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-white transition-all flex items-center gap-2 border border-white/5 uppercase tracking-widest disabled:opacity-50"
             title="Export Financial Data"
           >
             {isExporting ? <RefreshCcw className="animate-spin" size={14} /> : <Download size={14} />}
             {isExporting ? 'Generating...' : 'Financial Report'}
           </button>
-          <button 
+          <button
             onClick={() => setShowPlanModal(true)}
             className="px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20 uppercase tracking-widest"
           >
@@ -116,11 +171,15 @@ export const BillingManagement = () => {
           <div className="glass w-full max-w-xl rounded-[32px] border border-white/10 relative z-10 overflow-hidden shadow-2xl">
             <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/2">
               <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                <Plus className="text-primary" size={24} />
-                Create New Pricing Plan
+                {isEditMode ? <RefreshCcw className="text-primary" size={24} /> : <Plus className="text-primary" size={24} />}
+                {isEditMode ? 'Edit Pricing Plan' : 'Create New Pricing Plan'}
               </h2>
-              <button 
-                onClick={() => setShowPlanModal(false)} 
+              <button
+                onClick={() => {
+                  setShowPlanModal(false);
+                  setIsEditMode(false);
+                  setSelectedPlanId(null);
+                }}
                 className="p-2 hover:bg-white/5 rounded-xl text-on-surface/40 hover:text-white transition-all"
                 title="Close Modal"
               >
@@ -132,67 +191,71 @@ export const BillingManagement = () => {
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Plan Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       required
                       value={newPlan.name}
                       onChange={e => setNewPlan({...newPlan, name: e.target.value})}
-                      placeholder="e.g. Growth" 
-                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" 
+                      placeholder="e.g. Growth"
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Monthly Price (MMK)</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       required
                       value={newPlan.price}
                       onChange={e => setNewPlan({...newPlan, price: e.target.value})}
-                      placeholder="e.g. 250,000" 
-                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" 
+                      placeholder="e.g. 250,000"
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">User Limit</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       required
                       value={newPlan.maxUsers}
                       onChange={e => setNewPlan({...newPlan, maxUsers: e.target.value})}
-                      placeholder="25" 
-                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" 
+                      placeholder="25"
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Product Limit</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       required
                       value={newPlan.maxProducts}
                       onChange={e => setNewPlan({...newPlan, maxProducts: e.target.value})}
-                      placeholder="10000" 
-                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all" 
+                      placeholder="10000"
+                      className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-on-surface/40 uppercase tracking-widest">Plan Description</label>
-                  <textarea 
-                    rows={3} 
+                  <textarea
+                    rows={3}
                     required
                     value={newPlan.description}
                     onChange={e => setNewPlan({...newPlan, description: e.target.value})}
-                    placeholder="Describe the target audience for this plan..." 
+                    placeholder="Describe the target audience for this plan..."
                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-all resize-none"
                   ></textarea>
                 </div>
               </div>
               <div className="p-8 border-t border-white/5 bg-white/2 flex justify-end gap-3">
-                <button type="button" onClick={() => setShowPlanModal(false)} className="px-6 py-3 rounded-xl text-xs font-bold text-on-surface/40 hover:text-white transition-all uppercase tracking-widest">Cancel</button>
-                <button type="submit" disabled={createPlan.isPending} className="px-8 py-3 bg-primary text-on-primary rounded-xl text-xs font-bold shadow-lg shadow-primary/20 uppercase tracking-widest">
-                  {createPlan.isPending ? 'Saving...' : 'Save Plan'}
+                <button type="button" onClick={() => {
+                  setShowPlanModal(false);
+                  setIsEditMode(false);
+                  setSelectedPlanId(null);
+                }} className="px-6 py-3 rounded-xl text-xs font-bold text-on-surface/40 hover:text-white transition-all uppercase tracking-widest">Cancel</button>
+                <button type="submit" disabled={createPlan.isPending || updatePlan.isPending} className="px-8 py-3 bg-primary text-on-primary rounded-xl text-xs font-bold shadow-lg shadow-primary/20 uppercase tracking-widest">
+                  {createPlan.isPending || updatePlan.isPending ? 'Saving...' : isEditMode ? 'Update Plan' : 'Save Plan'}
                 </button>
               </div>
             </form>
@@ -236,7 +299,7 @@ export const BillingManagement = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                 <XAxis dataKey="name" stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} />
                 <YAxis stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `${v/1000}k`} />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: '#1A1C1E', border: '1px solid #ffffff10', borderRadius: '16px', backdropFilter: 'blur(10px)' }}
                   itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                 />
@@ -280,7 +343,7 @@ export const BillingManagement = () => {
       <div className="glass rounded-[32px] overflow-hidden border border-white/5 flex flex-col min-h-[500px]">
         <div className="p-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/2">
           <div className="flex gap-2 p-1 bg-black/20 rounded-2xl w-fit border border-white/5">
-            <button 
+            <button
               onClick={() => setActiveTab('invoices')}
               className={cn(
                 "px-8 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-2 uppercase tracking-widest",
@@ -290,7 +353,7 @@ export const BillingManagement = () => {
               <FileText size={16} />
               Invoices History
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('plans')}
               className={cn(
                 "px-8 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-2 uppercase tracking-widest",
@@ -301,13 +364,13 @@ export const BillingManagement = () => {
               Subscription Tiers
             </button>
           </div>
-          
+
           <div className="flex gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface/40" size={16} />
-              <input 
-                type="text" 
-                placeholder={activeTab === 'invoices' ? "Search by tenant or ID..." : "Filter plans..."} 
+              <input
+                type="text"
+                placeholder={activeTab === 'invoices' ? "Search by tenant or ID..." : "Filter plans..."}
                 className="pl-10 pr-4 py-2.5 bg-black/40 border border-white/10 rounded-xl text-xs text-white placeholder:text-on-surface/30 focus:outline-none focus:border-primary/50 w-64 transition-all"
               />
             </div>
@@ -415,7 +478,7 @@ export const BillingManagement = () => {
                     {plan.features ? JSON.parse(plan.features)[0] : 'No description provided.'}
                   </p>
                 </div>
-                
+
                 <div className="relative z-10 mb-8 border-y border-white/5 py-6">
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-display-lg font-bold text-white">{plan.price.toLocaleString()}</span>
@@ -438,13 +501,25 @@ export const BillingManagement = () => {
                   </li>
                 </ul>
 
-                <button className={cn(
-                  "relative z-10 w-full py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/10",
-                  "bg-white/5 text-white hover:bg-white/10"
-                )}>
-                  Edit Plan Configuration
-                  <ChevronRight size={16} />
-                </button>
+                <div className="flex gap-2 relative z-10 mt-auto">
+                  <button
+                    onClick={() => handleEditPlan(plan)}
+                    className={cn(
+                      "flex-1 py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-white/10",
+                      "bg-white/5 text-white hover:bg-white/10"
+                    )}
+                  >
+                    Edit Plan
+                    <ChevronRight size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeletePlan(plan.id)}
+                    className="p-4 rounded-2xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all border border-rose-500/20"
+                    title="Delete Plan"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

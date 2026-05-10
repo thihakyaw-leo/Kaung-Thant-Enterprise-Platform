@@ -6,12 +6,12 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Loader2,
-  LucideIcon,
   ChevronRight,
   PieChart as PieIcon,
   BarChart3,
   Users
 } from 'lucide-react';
+import { ElementType } from 'react';
 import {
   AreaChart,
   Area,
@@ -39,7 +39,7 @@ interface StatCardProps {
   value: string | number;
   change: string;
   trend: 'up' | 'down';
-  icon: LucideIcon;
+  icon: ElementType;
   color: string;
   loading?: boolean;
 }

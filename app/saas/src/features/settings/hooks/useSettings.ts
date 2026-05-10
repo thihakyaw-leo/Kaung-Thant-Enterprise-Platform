@@ -17,6 +17,8 @@ export function useSettings() {
       const { data } = await api.get(API_URL);
       return data.data;
     },
+    staleTime: 0,
+    gcTime: 0,
   });
 }
 

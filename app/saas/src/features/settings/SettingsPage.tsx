@@ -70,10 +70,19 @@ function SettingsForm({ initialSettings }: SettingsFormProps) {
 
   const [formData, setFormData] = useState<Record<string, string>>(() => {
     const data: Record<string, string> = {};
-    initialSettings.forEach(s => { data[s.key] = s.value; });
+    initialSettings?.forEach(s => { data[s.key] = s.value; });
     return data;
   });
+  const [prevSettings, setPrevSettings] = useState(initialSettings);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Sync formData with initialSettings when they change (e.g. after save or background refetch)
+  if (initialSettings !== prevSettings) {
+    setPrevSettings(initialSettings);
+    const data: Record<string, string> = {};
+    initialSettings?.forEach(s => { data[s.key] = s.value; });
+    setFormData(data);
+  }
 
   const handleSave = useCallback(() => {
     const updates = Object.entries(formData).map(([key, value]) => ({ key, value }));

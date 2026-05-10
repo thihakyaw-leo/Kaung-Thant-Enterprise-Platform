@@ -15,6 +15,10 @@ export interface Subscription {
 
 export interface BillingStats {
   totalRevenue: number;
+  unpaidCount: number;
+  tenantCount: number;
+  mrr: number;
+  avgRevenuePerTenant: number;
   distribution: {
     plan: string;
     count: number;
@@ -89,6 +93,19 @@ export const useCreatePricingPlan = () => {
   return useMutation({
     mutationFn: async (newPlan: Omit<PricingPlan, 'id'>) => {
       const { data } = await api.post('/api/master/billing/plans', newPlan);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pricing-plans'] });
+    },
+  });
+};
+
+export const useDeletePricingPlan = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.delete(`/api/master/pricing-plans/${id}`);
       return data;
     },
     onSuccess: () => {
